@@ -4,7 +4,7 @@ import (
 	"net"
 	"sync"
 
-	"github.com/lwch/natpass/code/client/conn"
+	"org.mutantcat.chickreomte/code/client/conn"
 )
 
 // Link link interface

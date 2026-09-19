@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/network"
-	"github.com/lwch/natpass/code/server/global"
+	"org.mutantcat.chickreomte/code/network"
+	"org.mutantcat.chickreomte/code/server/global"
 )
 
 type link struct {
@@ -76,7 +76,6 @@ func (h *Handler) Handle(conn net.Conn) {
 
 	cli := h.clis.new(id, c)
 
-	defer h.clis.close(id)
 	go cli.keepalive()
 
 	cli.run()

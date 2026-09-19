@@ -3,7 +3,7 @@ package code
 import (
 	"net/http"
 
-	"github.com/lwch/natpass/code/client/conn"
+	"org.mutantcat.chickreomte/code/client/conn"
 )
 
 // New new code-server workspace

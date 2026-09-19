@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/client/global"
-	"github.com/lwch/natpass/code/network"
-	"github.com/lwch/natpass/code/utils"
 	"github.com/lwch/runtime"
+	"org.mutantcat.chickreomte/code/client/global"
+	"org.mutantcat.chickreomte/code/network"
+	"org.mutantcat.chickreomte/code/utils"
 )
 
 const dropBlockTimeout = 10 * time.Minute
@@ -83,6 +83,7 @@ func (conn *Conn) connect() error {
 	cn := network.NewConn(dial)
 	err = writeHandshake(cn, conn.cfg)
 	if err != nil {
+		cn.Close()
 		logging.Error("write handshake: %v", err)
 		return err
 	}
@@ -95,6 +96,12 @@ func (conn *Conn) close() {
 	if conn.conn != nil {
 		conn.conn.Close()
 	}
+	conn.Lock()
+	for id, ch := range conn.read {
+		close(ch)
+		delete(conn.read, id)
+	}
+	conn.Unlock()
 }
 
 // writeHandshake send handshake message, default timeout is 5 seconds
@@ -142,9 +149,7 @@ func (conn *Conn) hookDispatch(msg *network.Msg) bool {
 	switch msg.GetXType() {
 	// if disconnected add linkid to drop list, and break the handle chain
 	case network.Msg_disconnect:
-		conn.addDrop(msg.GetLinkId())
-		// TODO: no need will block
-		// conn.onDisconnect <- msg.GetLinkId()
+		conn.ChanClose(msg.GetLinkId())
 		logging.Info("connection %s disconnected", msg.GetLinkId())
 		return false
 	}
@@ -160,7 +165,17 @@ func (conn *Conn) handleLinkedMessage(msg *network.Msg) bool {
 	if !conn.hookDispatch(msg) {
 		return true
 	}
-	ch := conn.getChan(linkID)
+	// Keep the read lock until delivery completes so ChanClose cannot close
+	// a channel while a sender is using it.
+	conn.RLock()
+	defer conn.RUnlock()
+	ch := conn.read[linkID]
+	if ch == nil {
+		if conn.isDrop(linkID) {
+			return true
+		}
+		ch = conn.unknownRead
+	}
 	select {
 	case ch <- msg:
 	case <-time.After(conn.cfg.WriteTimeout):
@@ -246,6 +261,7 @@ func (conn *Conn) keepalive() {
 	defer conn.close()
 	defer conn.cancel()
 	tk := time.NewTicker(10 * time.Second)
+	defer tk.Stop()
 	for {
 		select {
 		case <-tk.C:
@@ -268,17 +284,36 @@ func (conn *Conn) AddLink(id string) {
 
 // Requeue requeue for next read
 func (conn *Conn) Requeue(id string, msg *network.Msg) {
+	if msg == nil {
+		return
+	}
 	conn.RLock()
+	defer conn.RUnlock()
 	ch := conn.read[id]
-	conn.RUnlock()
-	ch <- msg
+	if ch == nil {
+		return
+	}
+	select {
+	case ch <- msg:
+	case <-time.After(conn.cfg.WriteTimeout):
+	case <-conn.ctx.Done():
+	}
 }
+
+var closedRead = func() chan *network.Msg {
+	ch := make(chan *network.Msg)
+	close(ch)
+	return ch
+}()
 
 // ChanRead get read channel from link id
 func (conn *Conn) ChanRead(id string) <-chan *network.Msg {
 	conn.RLock()
 	defer conn.RUnlock()
-	return conn.read[id]
+	if ch := conn.read[id]; ch != nil {
+		return ch
+	}
+	return closedRead
 }
 
 // ChanUnknown get channel of unknown link id
@@ -293,21 +328,19 @@ func (conn *Conn) ChanDisconnect() <-chan string {
 
 // checkDrop clear timeouted drop queue
 func (conn *Conn) checkDrop() {
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
 	for {
-		time.Sleep(time.Second)
-
-		drops := make([]string, 0, len(conn.drop))
-		conn.lockDrop.RLock()
+		select {
+		case <-conn.ctx.Done():
+			return
+		case <-ticker.C:
+		}
+		conn.lockDrop.Lock()
 		for k, t := range conn.drop {
 			if time.Now().After(t) {
-				drops = append(drops, k)
+				delete(conn.drop, k)
 			}
-		}
-		conn.lockDrop.RUnlock()
-
-		conn.lockDrop.Lock()
-		for _, id := range drops {
-			delete(conn.drop, id)
 		}
 		conn.lockDrop.Unlock()
 	}
@@ -321,12 +354,11 @@ func (conn *Conn) Wait() {
 // ChanClose close read chan
 func (conn *Conn) ChanClose(id string) {
 	conn.Lock()
+	conn.addDrop(id)
 	ch := conn.read[id]
 	if ch != nil {
 		close(ch)
 	}
 	delete(conn.read, id)
 	conn.Unlock()
-
-	conn.addDrop(id)
 }

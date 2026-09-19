@@ -8,8 +8,8 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/network"
-	"github.com/lwch/natpass/code/utils"
+	"org.mutantcat.chickreomte/code/network"
+	"org.mutantcat.chickreomte/code/utils"
 )
 
 func (ws *Workspace) handleRequest(msg *network.Msg) {
@@ -40,8 +40,7 @@ func (ws *Workspace) handleRequest(msg *network.Msg) {
 	}
 	defer response.Body.Close()
 	send := ws.remote.SendCodeResponseHeader(ws.target, ws.id, req.GetRequestId(), uint32(response.StatusCode), response.Header)
-	ws.sendBytes += send
-	ws.sendPacket++
+	ws.recordSent(send)
 	buf := make([]byte, 32*1024) // 32k block read
 	var idx uint32
 	for {
@@ -49,19 +48,16 @@ func (ws *Workspace) handleRequest(msg *network.Msg) {
 		if err != nil {
 			if err == io.EOF {
 				send := ws.remote.SendCodeResponseBody(ws.target, ws.id, req.GetRequestId(), idx, true, true, buf[:n])
-				ws.sendBytes += send
-				ws.sendPacket++
+				ws.recordSent(send)
 				return
 			}
 			send := ws.remote.SendCodeResponseBody(ws.target, ws.id, req.GetRequestId(), idx, false, true, []byte(err.Error()))
-			ws.sendBytes += send
-			ws.sendPacket++
+			ws.recordSent(send)
 			logging.Error("call request [%s] [%s] [%s] read response data: %v", ws.id, ws.name, req.GetUri(), err)
 			return
 		}
 		send := ws.remote.SendCodeResponseBody(ws.target, ws.id, req.GetRequestId(), idx, true, false, buf[:n])
-		ws.sendBytes += send
-		ws.sendPacket++
+		ws.recordSent(send)
 		idx++
 	}
 }
@@ -82,16 +78,14 @@ func (ws *Workspace) handleConnect(msg *network.Msg) {
 		logging.Error("dial websocket [%s] [%s]: %v", ws.id, ws.name, err)
 		send := ws.remote.SendCodeResponseConnect(ws.target, ws.id, connect.GetRequestId(),
 			false, err.Error(), nil)
-		ws.sendBytes += send
-		ws.sendPacket++
+		ws.recordSent(send)
 		return
 	}
 	defer remote.Close()
 	defer resp.Body.Close()
 	send := ws.remote.SendCodeResponseConnect(ws.target, ws.id, connect.GetRequestId(),
 		true, "", resp.Header)
-	ws.sendBytes += send
-	ws.sendPacket++
+	ws.recordSent(send)
 
 	var wg sync.WaitGroup
 
@@ -125,8 +119,7 @@ func (ws *Workspace) SendData(reqID uint64, ok bool, t int, body []byte) {
 		}
 		send := ws.remote.SendCodeData(ws.target, ws.id, reqID,
 			ok, t, body[i:end])
-		ws.sendBytes += send
-		ws.sendPacket++
+		ws.recordSent(send)
 	}
 }
 

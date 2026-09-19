@@ -3,8 +3,8 @@ package proto
 import (
 	"fmt"
 
-	"github.com/lwch/natpass/code/network/encoding"
 	"google.golang.org/protobuf/proto"
+	"org.mutantcat.chickreomte/code/network/encoding"
 )
 
 type codec struct{}

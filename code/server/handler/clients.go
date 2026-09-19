@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/lwch/natpass/code/network"
+	"org.mutantcat.chickreomte/code/network"
 )
 
 type clients struct {
@@ -29,12 +29,12 @@ func (cs *clients) new(id string, conn *network.Conn) *client {
 		links:   make(map[string]struct{}),
 	}
 	cs.Lock()
-	if c, ok := cs.data[id]; ok {
-		c.close()
-		delete(cs.data, id)
-	}
+	old := cs.data[id]
 	cs.data[id] = cli
 	cs.Unlock()
+	if old != nil {
+		old.close()
+	}
 	return cli
 }
 
@@ -44,11 +44,11 @@ func (cs *clients) lookup(id string) *client {
 	return cs.data[id]
 }
 
-func (cs *clients) close(id string) {
+func (cs *clients) close(cli *client) {
 	cs.Lock()
-	if c, ok := cs.data[id]; ok {
-		c.close()
-		delete(cs.data, id)
+	if cs.data[cli.id] == cli {
+		delete(cs.data, cli.id)
 	}
 	cs.Unlock()
+	cli.close()
 }

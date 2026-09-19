@@ -1,8 +1,8 @@
 package process
 
 import (
-	"github.com/lwch/natpass/code/client/rule/vnc/vncnetwork"
-	"github.com/lwch/natpass/code/network"
+	"org.mutantcat.chickreomte/code/client/rule/vnc/vncnetwork"
+	"org.mutantcat.chickreomte/code/network"
 )
 
 // MouseEvent dispatch mouse event to child process
@@ -33,7 +33,7 @@ func (p *Process) MouseEvent(data *network.VncMouse) {
 			Y:    data.GetY(),
 		},
 	}
-	p.chWrite <- &msg
+	p.send(&msg)
 }
 
 // KeyboardEvent dispatch keyboard event to child process
@@ -53,7 +53,7 @@ func (p *Process) KeyboardEvent(data *network.VncKeyboard) {
 			Key:  data.GetKey(),
 		},
 	}
-	p.chWrite <- &msg
+	p.send(&msg)
 }
 
 // SetCursor dispatch draw cursor to child process
@@ -63,7 +63,7 @@ func (p *Process) SetCursor(b bool) {
 	msg.Payload = &vncnetwork.VncMsg_ShowCursor{
 		ShowCursor: b,
 	}
-	p.chWrite <- &msg
+	p.send(&msg)
 }
 
 // ScrollEvent dispatch scroll event to child process
@@ -76,7 +76,7 @@ func (p *Process) ScrollEvent(data *network.VncScroll) {
 			Y: data.GetY(),
 		},
 	}
-	p.chWrite <- &msg
+	p.send(&msg)
 }
 
 // SetClipboard set clipboard data to child process
@@ -101,7 +101,7 @@ func (p *Process) SetClipboard(data *network.VncClipboard) {
 			Payload: &payload,
 		},
 	}
-	p.chWrite <- &msg
+	p.send(&msg)
 }
 
 // GetClipboard get clipboard data from child process
@@ -113,7 +113,13 @@ func (p *Process) GetClipboard() string {
 			Set: false,
 		},
 	}
-	p.chWrite <- &msg
-	data := <-p.chClipboard
-	return data.GetData()
+	if !p.send(&msg) {
+		return ""
+	}
+	select {
+	case data := <-p.chClipboard:
+		return data.GetData()
+	case <-p.doneChan():
+		return ""
+	}
 }

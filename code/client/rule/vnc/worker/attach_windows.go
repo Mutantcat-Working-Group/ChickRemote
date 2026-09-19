@@ -5,8 +5,8 @@ import (
 	"runtime"
 	"syscall"
 
-	"github.com/lwch/natpass/code/client/rule/vnc/define"
 	"golang.org/x/sys/windows"
+	"org.mutantcat.chickreomte/code/client/rule/vnc/define"
 )
 
 func attachDesktop() (func(), error) {

@@ -15,31 +15,35 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/client/conn"
-	"github.com/lwch/natpass/code/network"
-	"github.com/lwch/natpass/code/utils"
 	"google.golang.org/protobuf/proto"
+	"org.mutantcat.chickreomte/code/client/conn"
+	"org.mutantcat.chickreomte/code/network"
+	"org.mutantcat.chickreomte/code/utils"
 )
 
 var errWaitingTimeout = errors.New("waiting for code-server startup more than 1 minute")
 
 // Workspace workspace of code-server
 type Workspace struct {
+	// Keep the atomic counter aligned on 32-bit platforms.
+	requestID uint64
 	sync.RWMutex
-	parent *Code
-	id     string
-	target string
-	name   string
-	exec   *exec.Cmd
-	cli    *http.Client
-	dailer websocket.Dialer
-	remote *conn.Conn
+	closeOnce  sync.Once
+	listenOnce sync.Once
+	parent     *Code
+	id         string
+	target     string
+	name       string
+	exec       *exec.Cmd
+	cli        *http.Client
+	dailer     websocket.Dialer
+	remote     *conn.Conn
 	// runtime
+	statsMu    sync.RWMutex
 	sendBytes  uint64
 	recvBytes  uint64
 	sendPacket uint64
 	recvPacket uint64
-	requestID  uint64
 	onListen   chan struct{}
 	onMessage  map[uint64]chan *network.Msg
 }
@@ -47,6 +51,9 @@ type Workspace struct {
 func newWorkspace(parent *Code, id, name, target string, remote *conn.Conn) *Workspace {
 	name = strings.ReplaceAll(name, "/", "_")
 	name = strings.ReplaceAll(name, "\\", "_")
+	if name == "." || name == ".." || name == "" {
+		name = "workspace"
+	}
 	return &Workspace{
 		parent:    parent,
 		id:        id,
@@ -65,12 +72,30 @@ func (ws *Workspace) GetID() string {
 
 // GetBytes get send and recv bytes
 func (ws *Workspace) GetBytes() (uint64, uint64) {
+	ws.statsMu.RLock()
+	defer ws.statsMu.RUnlock()
 	return ws.recvBytes, ws.sendBytes
 }
 
 // GetPackets get send and recv packets
 func (ws *Workspace) GetPackets() (uint64, uint64) {
+	ws.statsMu.RLock()
+	defer ws.statsMu.RUnlock()
 	return ws.recvPacket, ws.sendPacket
+}
+
+func (ws *Workspace) recordSent(n uint64) {
+	ws.statsMu.Lock()
+	defer ws.statsMu.Unlock()
+	ws.sendBytes += n
+	ws.sendPacket++
+}
+
+func (ws *Workspace) recordReceived(n uint64) {
+	ws.statsMu.Lock()
+	defer ws.statsMu.Unlock()
+	ws.recvBytes += n
+	ws.recvPacket++
 }
 
 // Exec execute code-server
@@ -106,7 +131,7 @@ func (ws *Workspace) Exec(dir string) error {
 		return err
 	}
 	go func() {
-		err = ws.exec.Wait()
+		err := ws.exec.Wait()
 		if err != nil {
 			logging.Error("code-server [%s] [%s] exited: %v", ws.id, ws.name, err)
 			return
@@ -136,14 +161,22 @@ func (ws *Workspace) Exec(dir string) error {
 
 // Close close workspace
 func (ws *Workspace) Close(send bool) {
-	if ws.exec != nil && ws.exec.Process != nil {
-		ws.exec.Process.Kill()
-	}
-	if send {
-		ws.remote.SendDisconnect(ws.target, ws.id)
-	}
-	ws.parent.remove(ws.id)
-	ws.remote.ChanClose(ws.id)
+	ws.closeOnce.Do(func() {
+		if ws.exec != nil && ws.exec.Process != nil {
+			ws.exec.Process.Kill()
+		}
+		if send {
+			ws.remote.SendDisconnect(ws.target, ws.id)
+		}
+		ws.parent.remove(ws.id)
+		ws.remote.ChanClose(ws.id)
+		ws.Lock()
+		for id, ch := range ws.onMessage {
+			close(ch)
+			delete(ws.onMessage, id)
+		}
+		ws.Unlock()
+	})
 }
 
 func (ws *Workspace) log(stdout, stderr io.ReadCloser) {
@@ -159,7 +192,7 @@ func (ws *Workspace) log(stdout, stderr io.ReadCloser) {
 		for s.Scan() {
 			if strings.Contains(s.Text(), "listening on") &&
 				strings.Contains(s.Text(), ws.id+".sock") {
-				ws.onListen <- struct{}{}
+				ws.listenOnce.Do(func() { close(ws.onListen) })
 			}
 			logging.Info("code-server [%s] [%s]: %s", ws.id, ws.name, s.Text())
 		}
@@ -185,8 +218,7 @@ func (ws *Workspace) remoteRead() {
 			return
 		}
 		data, _ := proto.Marshal(msg)
-		ws.recvBytes += uint64(len(data))
-		ws.recvPacket++
+		ws.recordReceived(uint64(len(data)))
 		switch msg.GetXType() {
 		case network.Msg_code_request:
 			go ws.handleRequest(msg)
@@ -220,8 +252,7 @@ func (ws *Workspace) localRead() {
 			return
 		}
 		data, _ := proto.Marshal(msg)
-		ws.recvBytes += uint64(len(data))
-		ws.recvPacket++
+		ws.recordReceived(uint64(len(data)))
 		switch msg.GetXType() {
 		case network.Msg_code_response_hdr:
 			ws.writeMessage(msg.GetCsrepHdr().GetRequestId(), msg)
@@ -238,8 +269,8 @@ func (ws *Workspace) localRead() {
 func (ws *Workspace) writeMessage(reqID uint64, msg *network.Msg) {
 	defer utils.Recover("writeMessage")
 	ws.RLock()
+	defer ws.RUnlock()
 	ch := ws.onMessage[reqID]
-	ws.RUnlock()
 	if ch != nil {
 		select {
 		case ch <- msg:
@@ -253,7 +284,12 @@ func (ws *Workspace) writeMessage(reqID uint64, msg *network.Msg) {
 func (ws *Workspace) chanResponse(reqID uint64) <-chan *network.Msg {
 	ws.RLock()
 	defer ws.RUnlock()
-	return ws.onMessage[reqID]
+	if ch := ws.onMessage[reqID]; ch != nil {
+		return ch
+	}
+	ch := make(chan *network.Msg)
+	close(ch)
+	return ch
 }
 
 func (ws *Workspace) onResponse(reqID uint64) *network.Msg {

@@ -1,4 +1,15 @@
-# CHANGELOG
+# 小鸡远程（ChickReomte）更新记录
+
+[中文 README](README.md) | [English README](README.en.md) | [当前部署指南](docs/startup.md)
+
+## 未发布
+
+- 项目名称统一为“小鸡远程 / ChickReomte”，程序及服务名称为 `chickreomte-cli`、`chickreomte-svr`。
+- Go module 与内部包路径迁移到 `org.mutantcat.chickreomte`，GitHub 仓库地址不变，Protobuf 协议包名保留。
+- 重写中英文 README，同步部署、规则、架构和安全文档。
+- 统一 MIT 授权说明，移除与其冲突的非商业用途限制，保留原作者版权声明。
+
+以下为历史版本记录，按原有顺序保留。旧参数、独立 VNC 程序名及平台限制仅对应相应版本，当前使用方式以部署指南为准。Tauri 桌面包装尚未实现，不属于已发布功能。
 
 ## v0.0.1
 
@@ -78,7 +89,7 @@
 3. 修正windows下的配置文件include问题
 4. 支持linux远程桌面
 
-**注：linux受控端需使用np-cli.vnc程序进行启动，且目前无法以systemd等系统服务方式运行**
+**注：linux受控端需使用chickreomte-cli.vnc程序进行启动，且目前无法以systemd等系统服务方式运行**
 
 ## v0.7.3
 

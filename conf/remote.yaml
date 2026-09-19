@@ -2,7 +2,7 @@ id: remote             # 客户端ID
 server: 127.0.0.1:6154 # 服务器地址
 ssl:
   enabled: false       # 是否使用tls连接
-  insecure: false      # 是否关闭SNI，若使用自签证书可将其设置为true
+  insecure: false      # true会跳过证书校验；生产保持false，私有CA应加入系统信任库
 dashboard: # web面板
   enabled: false # 是否开放dashboard
 #include common.yaml

@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/client/conn"
 	"github.com/lwch/runtime"
+	"org.mutantcat.chickreomte/code/client/conn"
 )
 
 func (bench *Bench) http(conn *conn.Conn, w http.ResponseWriter, r *http.Request) {

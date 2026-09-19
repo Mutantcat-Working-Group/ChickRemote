@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/lwch/natpass/code/client/conn"
+	"org.mutantcat.chickreomte/code/client/conn"
 )
 
 // Resize resize terminal
@@ -17,9 +17,17 @@ func (shell *Shell) Resize(conn *conn.Conn, w http.ResponseWriter, r *http.Reque
 	shell.RLock()
 	link := shell.links[id]
 	shell.RUnlock()
+	if link == nil {
+		http.Error(w, "link not found", http.StatusNotFound)
+		return
+	}
 
-	nRows, _ := strconv.ParseUint(rows, 0, 32)
-	nCols, _ := strconv.ParseUint(cols, 0, 32)
+	nRows, rowErr := strconv.ParseUint(rows, 10, 16)
+	nCols, colErr := strconv.ParseUint(cols, 10, 16)
+	if rowErr != nil || colErr != nil || nRows == 0 || nCols == 0 {
+		http.Error(w, "invalid terminal size", http.StatusBadRequest)
+		return
+	}
 
 	link.SendResize(uint32(nRows), uint32(nCols))
 

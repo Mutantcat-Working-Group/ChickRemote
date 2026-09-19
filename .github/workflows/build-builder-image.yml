@@ -31,6 +31,6 @@ jobs:
           context: .
           pull: true
           push: true
-          tags: lwch/natpass-builder:${{ env.GO_VERSION }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/chickreomte-builder:${{ env.GO_VERSION }}
           build-args: |
             GO_VERSION=${{ env.GO_VERSION }}

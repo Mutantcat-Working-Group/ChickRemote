@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/lwch/natpass/code/client/app"
 	"github.com/spf13/cobra"
+	"org.mutantcat.chickreomte/code/client/app"
 )
 
 var (
@@ -18,8 +18,8 @@ var (
 var a = app.NewApp()
 
 var rootCmd = &cobra.Command{
-	Use:   "np-cli",
-	Short: "natpass client",
+	Use:   "chickreomte-cli",
+	Short: "ChickReomte client",
 	Run:   a.Run,
 }
 

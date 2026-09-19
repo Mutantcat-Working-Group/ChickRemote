@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/gorilla/websocket"
-	"github.com/lwch/natpass/code/client/rule/vnc/worker"
 	"github.com/lwch/runtime"
+	"org.mutantcat.chickreomte/code/client/rule/vnc/worker"
 )
 
 // RunWorker run vnc worker

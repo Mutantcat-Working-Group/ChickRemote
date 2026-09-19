@@ -1,6 +1,8 @@
 #!/bin/sh
+set -eu
 VERSION=dev
 GO_VERSION=1.20.11
+: "${DOCKERHUB_USERNAME:?Set DOCKERHUB_USERNAME to the account publishing the builder image}"
 docker run -it --rm -e BUILD_VERSION=$VERSION \
     -e GOPROXY=https://goproxy.cn \
-    -v `pwd`:/code -w /code lwch/natpass-builder:$GO_VERSION
+    -v "$(pwd):/code" -w /code "$DOCKERHUB_USERNAME/chickreomte-builder:$GO_VERSION"

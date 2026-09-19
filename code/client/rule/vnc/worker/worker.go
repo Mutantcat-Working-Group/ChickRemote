@@ -7,10 +7,10 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/client/rule/vnc/vncnetwork"
 	"github.com/lwch/rdesktop"
 	"github.com/lwch/runtime"
 	"google.golang.org/protobuf/proto"
+	"org.mutantcat.chickreomte/code/client/rule/vnc/vncnetwork"
 )
 
 // Worker worker object
@@ -27,12 +27,18 @@ func NewWorker(showCursor bool) *Worker {
 		return nil
 	}
 	worker.cli = cli
+	cli.ShowCursor(showCursor)
 	return worker
 }
 
 // Do handle worker
 func (worker *Worker) Do(conn *websocket.Conn) {
 	defer conn.Close()
+	if worker.cli == nil {
+		logging.Error("rdesktop client is unavailable")
+		return
+	}
+	defer worker.cli.Close()
 	for {
 		_, data, err := conn.ReadMessage()
 		runtime.Assert(err)

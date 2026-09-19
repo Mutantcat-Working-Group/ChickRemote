@@ -1,61 +1,78 @@
-# 实现原理
+# 小鸡远程架构与实现
 
-支持tls链接，protobuf进行数据传输，下面举例远程连接服务器集群内的某台主机
+[中文 README](../README.md) | [English README](../README.en.md) | [部署指南](startup.md)
 
-![shell](imgs/example.jpg)
+小鸡远程（ChickReomte）通过中继转发客户端间的 Protobuf 消息。控制端与受控端都主动连接中继，浏览器只连接控制端的管理面板和规则入口。
 
-server端配置(10.0.1.1)：
+```text
+浏览器 -- HTTP / WebSocket --> 控制端 chickreomte-cli
+                                    |
+                              TCP / 可选 TLS
+                                    |
+                              chickreomte-svr
+                                    |
+                              TCP / 可选 TLS
+                                    |
+                              受控端 chickreomte-cli
+                                    |
+                        Shell / 桌面子进程 / code-server
+```
 
-    listen: 6154       # 监听端口号
-    secret: 0123456789 # 预共享密钥
-    log:
-      dir: /opt/natpass/logs # 路径
-      size: 50M   # 单个文件大小
-      rotate: 7   # 保留数量
-    tls:
-      key: /dir/to/tls/key/file # tls密钥
-      crt: /dir/to/tls/crt/file # tls证书
+## 模块划分
 
-服务器client配置(192.168.1.100)：
+Go module 为 `org.mutantcat.chickreomte`，以下目录均在此模块下：
 
-    id: server            # 客户端ID
-    server: 10.0.1.1:6154 # 服务器地址
-    secret: 0123456789    # 预共享密钥，必须与server端相同，否则握手失败
-    log:
-      dir: /opt/natpass/logs # 路径
-      size: 50M   # 单个文件大小
-      rotate: 7   # 保留数量
+| 目录 | 职责 |
+| --- | --- |
+| `code/server` | 中继服务、客户端握手与消息路由 |
+| `code/client/conn` | 客户端连接、消息发送和虚拟链路分发 |
+| `code/client/dashboard` | Web 管理面板与统计接口 |
+| `code/client/rule` | Shell、VNC、code-server 与 bench 规则 |
+| `code/network` | Protobuf 消息、编解码和网络封装 |
+| `code/hash` | 基于共享密钥和时间窗口的握手签名 |
+| `html` | 构建时嵌入 Go 程序的 Web 资源 |
 
-办公网络client配置(172.16.1.100)：
+GitHub 仓库仍为 [Mutantcat-Working-Group/ChickRemote](https://github.com/Mutantcat-Working-Group/ChickRemote)。Go 包名迁移不意味着协议命名空间也被修改：Protobuf 包名保留为 `network` 和 `vncnetwork`。
 
-    id: work              # 客户端ID
-    server: 10.0.1.1:6154 # 服务器地址
-    secret: 0123456789    # 预共享密钥，必须与server端相同，否则握手失败
-    log:
-      dir: /opt/natpass/logs # 路径
-      size: 50M   # 单个文件大小
-      rotate: 7   # 保留数量
-    rules:                          # 远端rule列表可为空
-      - name: rdp                   # 链路名称
-        target: server              # 目标客户端ID
-        type: shell                 # 连接类型tcp或udp
-        local_addr: 0.0.0.0         # 本地监听地址
-        local_port: 3389            # 本地监听端口号
+## 连接与会话流程
 
-工作流程如下：
+1. 两个客户端根据 `server` 连接同一中继；若启用 `ssl.enabled`，先建立 TLS 连接。
+2. 客户端发送 ID 和握手签名。当前签名使用共享密钥作为 HMAC-SHA512 密钥，对按 60 秒窗口计算的时间值签名，并非旧文档所述的 MD5。
+3. 服务端检查握手与签名。客户端和服务端需要共享相同密钥并同步系统时间。
+4. 用户从控制端浏览器打开某条规则，控制端按 `target` 发送 `connect_req`，中继将其路由到受控端。
+5. 受控端创建对应会话。例如 Shell 规则启动终端程序，VNC 使用桌面子进程，code-server 规则管理开发环境转发。
+6. 受控端通过 `connect_rep` 返回结果。成功后，双方使用链路 ID 分发后续数据。
+7. 关闭会话或连接断开时，通过相应断开处理清理链路与会话资源。
 
-1. 办公网络与家庭网络中的np-cli创建tls连接到np-svr
-2. np-cli服务发送握手包，并将配置文件中的secret字段进行md5哈希
-3. np-svr等待握手报文，若等待超时则为非法链接，直接断开
-4. 用户打开办公网络主机172.16.1.100上的终端页面，并连接到服务器集群中的主机server
-5. 172.16.1.100上的np-cli发送connect_request消息，并将连接类型设置为shell
-6. np-svr转发connect_request消息至192.168.1.100上的np-cli
-7. 192.168.1.100上的np-cli接收到connect_request消息，创建/bin/bash进程
-8. 192.168.1.100上的np-cli根据链接创建结果返回connect_response消息
-9. np-svr转发connect_response消息至172.16.1.100上的np-cli
-10. 172.168.1.100上的np-cli接收connect_response消息
-11. 开始转发网页上的输入输出内容
+## 配置示例
 
-## 软件架构
+使用仓库的 `conf/server.yaml`、`conf/remote.yaml`、`conf/local.yaml`，并按[部署指南](startup.md)替换共享密钥、配置证书及限制监听地址。开启服务端 TLS 后，两个客户端都必须启用 TLS，不能一侧明文、一侧加密。
 
-![架构图](imgs/architecture.jpg)
+例如，受控端 ID 为 `remote` 时，控制端的 Shell 规则可以是：
+
+```yaml
+rules:
+  - name: shell
+    target: remote
+    type: shell
+    local_addr: 127.0.0.1
+    local_port: 8081
+    env:
+      - TERM=xterm
+```
+
+这是客户端配置片段，不是完整配置。`8081` 是控制端 Web Shell 入口，不是 SSH 或 RDP 端口。
+
+## 安全边界
+
+共享密钥握手不是浏览器登录系统，也不提供细粒度主机授权。中继 TLS 保护客户端到中继的链路，不是客户端之间的端到端加密；中继可以处理转发消息，应视为可信基础设施。
+
+管理面板与规则入口不提供独立登录认证，需通过回环绑定、VPN 或外部认证保护。仅在已授权设备上运行，详见[安全说明](../SECURITY.md)。当前实现为 CLI 和 Web 管理界面，Tauri 桌面包装尚未实现。
+
+## 历史图示
+
+下列图片及同目录 `.drawio` 源文件保留为历史设计资料，可能包含旧品牌或过时配置。当前行为、命令与安全要求以本页和部署指南为准。
+
+![历史部署示意](imgs/example.jpg)
+
+![历史软件架构](imgs/architecture.jpg)

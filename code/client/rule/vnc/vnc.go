@@ -8,11 +8,11 @@ import (
 	"time"
 
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/client/conn"
-	"github.com/lwch/natpass/code/client/global"
-	"github.com/lwch/natpass/code/client/rule"
-	"github.com/lwch/natpass/code/network"
 	"github.com/lwch/runtime"
+	"org.mutantcat.chickreomte/code/client/conn"
+	"org.mutantcat.chickreomte/code/client/global"
+	"org.mutantcat.chickreomte/code/client/rule"
+	"org.mutantcat.chickreomte/code/network"
 )
 
 // VNC vnc handler
@@ -24,6 +24,13 @@ type VNC struct {
 	readTimeout  time.Duration
 	writeTimeout time.Duration
 	chClipboard  chan *network.VncClipboard
+}
+
+// GetLink get current vnc link
+func (v *VNC) GetLink() *Link {
+	v.RLock()
+	defer v.RUnlock()
+	return v.link
 }
 
 // New new vnc
@@ -46,10 +53,9 @@ func (v *VNC) NewLink(id, remote string, localConn net.Conn, remoteConn *conn.Co
 		target: remote,
 		remote: remoteConn,
 	}
-	if v.link != nil {
-		v.link.Close(true)
-	}
+	v.Lock()
 	v.link = link
+	v.Unlock()
 	return link
 }
 
@@ -70,8 +76,8 @@ func (v *VNC) GetTarget() string {
 
 // GetLinks get rule links
 func (v *VNC) GetLinks() []rule.Link {
-	if v.link != nil {
-		return []rule.Link{v.link}
+	if link := v.GetLink(); link != nil {
+		return []rule.Link{link}
 	}
 	return nil
 }
@@ -88,7 +94,9 @@ func (v *VNC) GetPort() uint16 {
 
 // OnDisconnect on disconnect message
 func (v *VNC) OnDisconnect(id string) {
-	// TODO
+	if link := v.GetLink(); link != nil && link.id == id {
+		link.Close(false)
+	}
 }
 
 // Handle handle shell
@@ -121,5 +129,9 @@ func (v *VNC) Handle(c *conn.Conn) {
 }
 
 func (v *VNC) remove(id string) {
-	v.link = nil
+	v.Lock()
+	if v.link != nil && v.link.id == id {
+		v.link = nil
+	}
+	v.Unlock()
 }

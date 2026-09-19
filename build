@@ -1,4 +1,5 @@
 #!/bin/sh
+set -eu
 
 BUILD_VERSION=${BUILD_VERSION:-0.0.0}
 
@@ -10,7 +11,7 @@ LDFLAGS="-X 'main.gitHash=$HASH'
 -X 'main.buildTime=$BUILD_TIME'
 -X 'main.version=$BUILD_VERSION'"
 
-if [ "$GOOS" = "windows" ]; then
+if [ "${GOOS:-}" = "windows" ]; then
 LDFLAGS="$LDFLAGS
 --extldflags '-static -fpic -lssp'"
 fi
@@ -24,5 +25,5 @@ go run contrib/bindata/main.go -pkg code -o code/client/rule/code/assets.go \
 go run contrib/bindata/main.go -pkg dashboard -o code/client/dashboard/assets.go \
    -prefix html/dashboard "$@" html/dashboard/...
 
-go build -ldflags "$LDFLAGS" -o bin/np-svr code/server/*.go
-go build -ldflags "$LDFLAGS" -tags "$TAGS" -o bin/np-cli code/client/*.go
+go build -ldflags "$LDFLAGS" -o bin/chickreomte-svr code/server/*.go
+go build -ldflags "$LDFLAGS" -tags "${TAGS:-}" -o bin/chickreomte-cli code/client/*.go

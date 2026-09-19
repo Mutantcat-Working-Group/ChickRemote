@@ -3,8 +3,13 @@ var page = {
         page.load(function() {
             var name = arg('name');
             if (name != 'null') {
-                $('#terms').find(`option:contains(${name})`).prop('selected', true);
-                page.connect();
+                var option = $('#terms option').filter(function() {
+                    return $(this).text() === name;
+                }).first();
+                if (option.length) {
+                    option.prop('selected', true);
+                    page.connect();
+                }
             }
         });
         $('#connect').click(page.connect);
@@ -19,12 +24,13 @@ var page = {
                     rule.type != 'code-server') {
                     return;
                 }
-                $('#terms').append($(`<option value="${rule.port}">${rule.name}</option>`));
+                $('#terms').append($('<option>').val(rule.port).text(rule.name));
             });
             cb();
         });
     },
     connect: function() {
+        if (!$('#terms option:selected').length) return;
         $('#tabs>.nav-item>.active').removeClass('active');
         $('#tab-content>.active').removeClass('show').removeClass('active');
         var idx = page.idx;

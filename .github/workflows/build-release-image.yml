@@ -28,4 +28,4 @@ jobs:
           context: .
           pull: true
           push: true
-          tags: lwch/natpass-release
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/chickreomte-release

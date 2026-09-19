@@ -4,7 +4,7 @@ import (
 	"image"
 	"time"
 
-	"github.com/lwch/natpass/code/network"
+	"org.mutantcat.chickreomte/code/network"
 )
 
 // SendVNCImage send vnc image data

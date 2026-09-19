@@ -3,14 +3,16 @@ package vnc
 import (
 	"bytes"
 	"image"
+	"image/draw"
 	"image/jpeg"
+	"sync"
 	"time"
 
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/client/conn"
-	"github.com/lwch/natpass/code/client/rule/vnc/process"
-	"github.com/lwch/natpass/code/network"
-	"github.com/lwch/natpass/code/utils"
+	"org.mutantcat.chickreomte/code/client/conn"
+	"org.mutantcat.chickreomte/code/client/rule/vnc/process"
+	"org.mutantcat.chickreomte/code/network"
+	"org.mutantcat.chickreomte/code/utils"
 )
 
 const (
@@ -20,10 +22,12 @@ const (
 
 // Link vnc link
 type Link struct {
-	parent *VNC
-	id     string // link id
-	target string // target id
-	remote *conn.Conn
+	closeOnce  sync.Once
+	settingsMu sync.Mutex
+	parent     *VNC
+	id         string // link id
+	target     string // target id
+	remote     *conn.Conn
 	// vnc
 	ps         *process.Process
 	quality    uint32
@@ -55,12 +59,19 @@ func (link *Link) GetPackets() (uint64, uint64) {
 
 // SetQuality transfer quality
 func (link *Link) SetQuality(q uint32) {
+	link.settingsMu.Lock()
+	defer link.settingsMu.Unlock()
+	if q > 100 {
+		q = 100
+	}
 	link.quality = q
 	link.reDraw = true
 }
 
 // SetCursor set show cursor
 func (link *Link) SetCursor(b bool) {
+	link.settingsMu.Lock()
+	defer link.settingsMu.Unlock()
 	link.showCursor = b
 	link.reDraw = true
 }
@@ -77,6 +88,10 @@ func (link *Link) Fork(confDir string) error {
 
 // Forward forward data
 func (link *Link) Forward() {
+	if link.ps == nil {
+		link.Close(true)
+		return
+	}
 	go link.remoteRead()
 	go link.localRead()
 }
@@ -126,20 +141,30 @@ func (link *Link) localRead() {
 	link.sendAll(img)
 	link.img = img
 	size := img.Rect
-	sleep := time.Second / time.Duration(link.parent.cfg.Fps)
+	fps := link.parent.cfg.Fps
+	if fps == 0 {
+		fps = 10
+	}
+	if fps > 50 {
+		fps = 50
+	}
+	sleep := time.Second / time.Duration(fps)
 	for {
 		time.Sleep(sleep)
 		img, err = link.ps.Capture(0)
 		if err != nil {
 			logging.Error("capture: %v", err)
-			continue
+			return
 		}
+		link.settingsMu.Lock()
+		redraw := link.reDraw
+		link.reDraw = false
+		link.settingsMu.Unlock()
 		if img.Rect.Dx() != size.Dx() ||
 			img.Rect.Dy() != size.Dy() ||
-			link.reDraw ||
+			redraw ||
 			link.idx%10000 == 0 {
 			link.sendAll(img)
-			link.reDraw = false
 		} else {
 			link.sendDiff(img)
 		}
@@ -151,30 +176,29 @@ func (link *Link) localRead() {
 
 // Close close link
 func (link *Link) Close(send bool) {
-	if link.ps != nil {
-		link.ps.Close()
-	}
-	if send {
-		link.remote.SendDisconnect(link.target, link.id)
-	}
-	link.parent.remove(link.id)
-	link.remote.ChanClose(link.id)
+	link.closeOnce.Do(func() {
+		if link.ps != nil {
+			link.ps.Close()
+		}
+		if send {
+			link.remote.SendDisconnect(link.target, link.id)
+		}
+		link.parent.remove(link.id)
+		link.remote.ChanClose(link.id)
+	})
 }
 
 func cut(src *image.RGBA, rect image.Rectangle) *image.RGBA {
 	size := rect.Size()
 	ret := image.NewRGBA(image.Rect(0, 0, size.X, size.Y))
-	sx := src.Bounds().Size().X * 4
-	dx := rect.Min.X * 4
-	idx := rect.Min.Y*sx + dx
-	for y := 0; y < size.Y; y++ {
-		copy(ret.Pix[y*size.X*4:], src.Pix[idx:idx+size.X*4-1])
-		idx += sx
-	}
+	draw.Draw(ret, ret.Bounds(), src, rect.Min, draw.Src)
 	return ret
 }
 
 func (link *Link) sendAll(img *image.RGBA) {
+	link.settingsMu.Lock()
+	quality := link.quality
+	link.settingsMu.Unlock()
 	size := img.Bounds()
 	screen := image.Rect(0, 0, img.Rect.Dx(), img.Rect.Dy())
 	var buf bytes.Buffer
@@ -190,13 +214,13 @@ func (link *Link) sendAll(img *image.RGBA) {
 			}
 			rect := image.Rect(x, y, x+width, y+height)
 			next := cut(img, rect)
-			if link.quality == 100 {
+			if quality == 100 {
 				link.remote.SendVNCImage(link.target, link.id,
 					screen, rect, network.VncImage_raw, next.Pix)
 				continue
 			}
 			buf.Reset()
-			err := jpeg.Encode(&buf, next, &jpeg.Options{Quality: int(link.quality)})
+			err := jpeg.Encode(&buf, next, &jpeg.Options{Quality: int(quality)})
 			if err == nil {
 				link.remote.SendVNCImage(link.target, link.id,
 					screen, rect, network.VncImage_jpeg, buf.Bytes())
@@ -209,18 +233,21 @@ func (link *Link) sendAll(img *image.RGBA) {
 }
 
 func (link *Link) sendDiff(img *image.RGBA) {
+	link.settingsMu.Lock()
+	quality := link.quality
+	link.settingsMu.Unlock()
 	blocks := calcDiff(link.img, img)
 	screen := image.Rect(0, 0, img.Rect.Dx(), img.Rect.Dy())
 	var buf bytes.Buffer
 	for _, block := range blocks {
 		next := cut(img, block)
-		if link.quality == 100 {
+		if quality == 100 {
 			link.remote.SendVNCImage(link.target, link.id,
 				screen, block, network.VncImage_raw, next.Pix)
 			continue
 		}
 		buf.Reset()
-		err := jpeg.Encode(&buf, next, &jpeg.Options{Quality: int(link.quality)})
+		err := jpeg.Encode(&buf, next, &jpeg.Options{Quality: int(quality)})
 		if err == nil {
 			link.remote.SendVNCImage(link.target, link.id,
 				screen, block, network.VncImage_jpeg, buf.Bytes())

@@ -7,10 +7,10 @@ import (
 	rt "runtime"
 
 	"github.com/kardianos/service"
-	"github.com/lwch/natpass/code/server/global"
-	"github.com/lwch/natpass/code/utils"
 	"github.com/lwch/runtime"
 	"github.com/spf13/cobra"
+	"org.mutantcat.chickreomte/code/server/global"
+	"org.mutantcat.chickreomte/code/utils"
 )
 
 // User --user param
@@ -62,9 +62,9 @@ func buildService(p *program) service.Service {
 	}
 
 	svc, err := service.New(p, &service.Config{
-		Name:         "np-svr",
-		DisplayName:  "np-svr",
-		Description:  "natpass server",
+		Name:         "chickreomte-svr",
+		DisplayName:  "chickreomte-svr",
+		Description:  "ChickReomte server",
 		UserName:     User,
 		Arguments:    []string{"--conf", dir},
 		Dependencies: depends,
@@ -91,7 +91,7 @@ func (a *App) Install(*cobra.Command, []string) {
 		os.Exit(1)
 	}
 	utils.BuildDir(cfg.LogDir, User)
-	fmt.Println("register service np-svr success")
+	fmt.Println("register service chickreomte-svr success")
 }
 
 // Uninstall unregister service
@@ -101,7 +101,7 @@ func (a *App) Uninstall(*cobra.Command, []string) {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	fmt.Println("unregister service np-svr success")
+	fmt.Println("unregister service chickreomte-svr success")
 }
 
 // Start start service
@@ -111,7 +111,7 @@ func (a *App) Start(*cobra.Command, []string) {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	fmt.Println("start service np-svr success")
+	fmt.Println("start service chickreomte-svr success")
 }
 
 // Stop stop service
@@ -121,7 +121,7 @@ func (a *App) Stop(*cobra.Command, []string) {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	fmt.Println("stop service np-svr success")
+	fmt.Println("stop service chickreomte-svr success")
 }
 
 // Restart restart service
@@ -131,7 +131,7 @@ func (a *App) Restart(*cobra.Command, []string) {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	fmt.Println("restart service np-svr success")
+	fmt.Println("restart service chickreomte-svr success")
 }
 
 // Status show service status

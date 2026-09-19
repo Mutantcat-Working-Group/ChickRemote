@@ -6,8 +6,8 @@ import (
 
 	_ "net/http/pprof"
 
-	"github.com/lwch/natpass/code/server/app"
 	"github.com/spf13/cobra"
+	"org.mutantcat.chickreomte/code/server/app"
 )
 
 var (
@@ -20,8 +20,8 @@ var (
 var a = app.NewApp()
 
 var rootCmd = &cobra.Command{
-	Use:   "np-cli",
-	Short: "natpass client",
+	Use:   "chickreomte-svr",
+	Short: "ChickReomte server",
 	Run:   a.Run,
 }
 

@@ -17,12 +17,14 @@ func (code *Code) Info(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+	recvBytes, sendBytes := workspace.GetBytes()
+	recvPackets, sendPackets := workspace.GetPackets()
 	data, err := json.Marshal(map[string]interface{}{
 		"name":        code.Name,
-		"send_bytes":  workspace.sendBytes,
-		"send_packet": workspace.sendPacket,
-		"recv_bytes":  workspace.recvBytes,
-		"recv_packet": workspace.recvPacket,
+		"send_bytes":  sendBytes,
+		"send_packet": sendPackets,
+		"recv_bytes":  recvBytes,
+		"recv_packet": recvPackets,
 	})
 	if err != nil {
 		logging.Error("marshal: %v", err)

@@ -4,7 +4,7 @@ import (
 	"syscall"
 
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/client/rule/vnc/define"
+	"org.mutantcat.chickreomte/code/client/rule/vnc/define"
 )
 
 // CADEvent handle ctrl+alt+del event

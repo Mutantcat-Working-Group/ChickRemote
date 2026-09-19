@@ -1,9 +1,8 @@
 package vnc
 
 import (
+	"bytes"
 	"image"
-	"reflect"
-	"unsafe"
 )
 
 func calcDiff(src, dst *image.RGBA) []image.Rectangle {
@@ -12,8 +11,8 @@ func calcDiff(src, dst *image.RGBA) []image.Rectangle {
 	const height = 64
 	size := dst.Bounds()
 	ret := make([]image.Rectangle, 0, (size.Max.X*size.Max.Y)/(width*height))
-	for y := 0; y < size.Max.Y; y += height {
-		for x := 0; x < size.Max.X; x += width {
+	for y := size.Min.Y; y < size.Max.Y; y += height {
+		for x := size.Min.X; x < size.Max.X; x += width {
 			dWidth := size.Max.X - x
 			dHeight := size.Max.Y - y
 			if dWidth > width {
@@ -39,43 +38,19 @@ func calcDiff(src, dst *image.RGBA) []image.Rectangle {
 }
 
 func isDiff8(src, dst *image.RGBA, rect image.Rectangle) bool {
-	sx := src.Bounds().Max.X * 4
-	dx := rect.Min.X * 4
-	ptr := uintptr(rect.Min.Y*sx + dx)
-	srcData := unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&src.Pix)).Data)
-	dstData := unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&dst.Pix)).Data)
-	for y := 0; y < rect.Size().Y; y++ {
-		next := ptr + uintptr(sx)
-		for x := 0; x < rect.Size().X; x += 2 {
-			src := (*uint64)(unsafe.Pointer(uintptr(srcData) + ptr))
-			dst := (*uint64)(unsafe.Pointer(uintptr(dstData) + ptr))
-			if *src != *dst {
-				return true
-			}
-			ptr += 8
-		}
-		ptr = next
-	}
-	return false
+	return isDiff4(src, dst, rect)
 }
 
 func isDiff4(src, dst *image.RGBA, rect image.Rectangle) bool {
-	sx := src.Bounds().Max.X * 4
-	dx := rect.Min.X * 4
-	ptr := uintptr(rect.Min.Y*sx + dx)
-	srcData := unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&src.Pix)).Data)
-	dstData := unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&dst.Pix)).Data)
-	for y := 0; y < rect.Size().Y; y++ {
-		next := ptr + uintptr(sx)
-		for x := 0; x < rect.Size().X; x++ {
-			src := (*uint64)(unsafe.Pointer(uintptr(srcData) + ptr))
-			dst := (*uint64)(unsafe.Pointer(uintptr(dstData) + ptr))
-			if *src != *dst {
-				return true
-			}
-			ptr += 4
+	if !rect.In(src.Rect) || !rect.In(dst.Rect) {
+		return true
+	}
+	width := rect.Dx() * 4
+	for y := rect.Min.Y; y < rect.Max.Y; y++ {
+		si, di := src.PixOffset(rect.Min.X, y), dst.PixOffset(rect.Min.X, y)
+		if !bytes.Equal(src.Pix[si:si+width], dst.Pix[di:di+width]) {
+			return true
 		}
-		ptr = next
 	}
 	return false
 }

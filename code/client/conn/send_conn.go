@@ -3,9 +3,9 @@ package conn
 import (
 	"time"
 
-	"github.com/lwch/natpass/code/client/global"
-	"github.com/lwch/natpass/code/network"
 	"google.golang.org/protobuf/proto"
+	"org.mutantcat.chickreomte/code/client/global"
+	"org.mutantcat.chickreomte/code/network"
 )
 
 // SendConnectReq send connect request message

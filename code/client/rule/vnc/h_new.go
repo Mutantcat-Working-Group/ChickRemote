@@ -7,15 +7,15 @@ import (
 	"time"
 
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/client/conn"
-	"github.com/lwch/natpass/code/network"
 	"github.com/lwch/runtime"
+	"org.mutantcat.chickreomte/code/client/conn"
+	"org.mutantcat.chickreomte/code/network"
 )
 
 // New new vnc
 func (v *VNC) New(conn *conn.Conn, w http.ResponseWriter, r *http.Request) {
-	if v.link != nil {
-		v.link.Close(true)
+	if link := v.GetLink(); link != nil {
+		link.Close(true)
 	}
 	q := r.FormValue("quality")
 	s := r.FormValue("show_cursor")
@@ -34,19 +34,28 @@ func (v *VNC) New(conn *conn.Conn, w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if v.link != nil {
-		conn.SendDisconnect(v.link.target, v.link.id)
-	}
+	link := v.NewLink(id, v.cfg.Target, nil, conn).(*Link)
+	ready := false
+	defer func() {
+		if !ready {
+			link.Close(true)
+		}
+	}()
 	conn.SendConnectVnc(id, v.cfg, quality, showCursor)
-	v.link = v.NewLink(id, v.cfg.Target, nil, conn).(*Link)
 	ch := conn.ChanRead(id)
 	timeout := time.After(v.readTimeout)
 	for {
 		var msg *network.Msg
 		select {
 		case msg = <-ch:
+			if msg == nil {
+				http.Error(w, "connection closed", http.StatusBadGateway)
+				return
+			}
+		case <-r.Context().Done():
+			return
 		case <-timeout:
-			logging.Error("create vnc %s by rule %s failed, timtout", v.link.id, v.link.parent.Name)
+			logging.Error("create vnc %s by rule %s failed, timtout", link.id, link.parent.Name)
 			http.Error(w, "timeout", http.StatusBadGateway)
 			return
 		}
@@ -58,12 +67,13 @@ func (v *VNC) New(conn *conn.Conn, w http.ResponseWriter, r *http.Request) {
 		rep := msg.GetCrep()
 		if !rep.GetOk() {
 			logging.Error("create vnc %s by rule %s failed, err=%s",
-				v.link.id, v.link.parent.Name, rep.GetMsg())
+				link.id, link.parent.Name, rep.GetMsg())
 			http.Error(w, rep.GetMsg(), http.StatusBadGateway)
 			return
 		}
 		break
 	}
 	logging.Info("new vnc: name=%s, id=%s", v.Name, id)
+	ready = true
 	fmt.Fprint(w, id)
 }

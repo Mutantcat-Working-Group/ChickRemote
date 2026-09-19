@@ -16,10 +16,10 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/client/conn"
-	"github.com/lwch/natpass/code/network"
-	"github.com/lwch/natpass/code/utils"
 	"github.com/lwch/runtime"
+	"org.mutantcat.chickreomte/code/client/conn"
+	"org.mutantcat.chickreomte/code/network"
+	"org.mutantcat.chickreomte/code/utils"
 )
 
 var upgrader = websocket.Upgrader{}
@@ -27,6 +27,11 @@ var upgrader = websocket.Upgrader{}
 // WS websocket handler
 func (v *VNC) WS(conn *conn.Conn, w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/ws/")
+	link := v.GetLink()
+	if link == nil || link.id != id {
+		http.NotFound(w, r)
+		return
+	}
 	local, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -34,20 +39,22 @@ func (v *VNC) WS(conn *conn.Conn, w http.ResponseWriter, r *http.Request) {
 	}
 	defer local.Close()
 	ch := conn.ChanRead(id)
-	defer conn.SendDisconnect(v.link.target, v.link.id)
+	defer link.Close(true)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	var wg sync.WaitGroup
 	wg.Add(2)
 	go func() {
+		defer local.Close()
 		defer cancel()
 		defer wg.Done()
 		v.remoteRead(ctx, ch, local)
 	}()
 	go func() {
+		defer local.Close()
 		defer cancel()
 		defer wg.Done()
-		v.localRead(ctx, local, conn)
+		v.localRead(ctx, local, link)
 	}()
 	wg.Wait()
 }
@@ -58,6 +65,9 @@ func (v *VNC) remoteRead(ctx context.Context, ch <-chan *network.Msg, local *web
 		var msg *network.Msg
 		select {
 		case msg = <-ch:
+			if msg == nil {
+				return
+			}
 		case <-ctx.Done():
 			return
 		}
@@ -67,7 +77,12 @@ func (v *VNC) remoteRead(ctx context.Context, ch <-chan *network.Msg, local *web
 			runtime.Assert(err)
 			replyImage(local, msg.GetVimg(), data, len(msg.GetVimg().GetData()))
 		case network.Msg_vnc_clipboard:
-			v.chClipboard <- msg.GetVclipboard()
+			select {
+			case v.chClipboard <- msg.GetVclipboard():
+			case <-ctx.Done():
+				return
+			default:
+			}
 		default:
 			logging.Error("on message: %s", msg.GetXType().String())
 			return
@@ -75,7 +90,7 @@ func (v *VNC) remoteRead(ctx context.Context, ch <-chan *network.Msg, local *web
 	}
 }
 
-func (v *VNC) localRead(ctx context.Context, local *websocket.Conn, remote *conn.Conn) {
+func (v *VNC) localRead(ctx context.Context, local *websocket.Conn, link *Link) {
 	defer utils.Recover("localRead")
 	for {
 		select {
@@ -98,13 +113,13 @@ func (v *VNC) localRead(ctx context.Context, local *websocket.Conn, remote *conn
 		}
 		switch msg.Action {
 		case "mouse":
-			v.mouseEvent(remote, data)
+			link.mouseEvent(data)
 		case "keyboard":
-			v.keyboardEvent(remote, data)
+			link.keyboardEvent(data)
 		case "cad":
-			v.cadEvent(remote)
+			link.cadEvent()
 		case "scroll":
-			v.scrollEvent(remote, data)
+			link.scrollEvent(data)
 		}
 	}
 }

@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/network"
 	"google.golang.org/protobuf/proto"
+	"org.mutantcat.chickreomte/code/network"
 )
 
 func makeCodeHeader(header http.Header) map[string]*network.CodeHeaderValues {

@@ -7,7 +7,7 @@ import (
 	"sync/atomic"
 
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/network"
+	"org.mutantcat.chickreomte/code/network"
 )
 
 // SendRequest send request from local node
@@ -23,8 +23,7 @@ func (ws *Workspace) SendRequest(r *http.Request) (uint64, error) {
 	ws.Unlock()
 	send := ws.remote.SendCodeRequest(ws.target, ws.id, reqID,
 		r.Method, r.URL.RequestURI(), body, r.Header)
-	ws.sendBytes += send
-	ws.sendPacket++
+	ws.recordSent(send)
 	return reqID, nil
 }
 
@@ -50,7 +49,6 @@ func (ws *Workspace) SendConnect(r *http.Request) (uint64, error) {
 
 	send := ws.remote.SendCodeConnect(ws.target, ws.id, reqID,
 		r.URL.RequestURI(), hdr)
-	ws.sendBytes += send
-	ws.sendPacket++
+	ws.recordSent(send)
 	return reqID, nil
 }

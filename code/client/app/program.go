@@ -7,16 +7,16 @@ import (
 	"github.com/common-nighthawk/go-figure"
 	"github.com/kardianos/service"
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/client/conn"
-	"github.com/lwch/natpass/code/client/dashboard"
-	"github.com/lwch/natpass/code/client/global"
-	"github.com/lwch/natpass/code/client/rule"
-	"github.com/lwch/natpass/code/client/rule/bench"
-	"github.com/lwch/natpass/code/client/rule/code"
-	"github.com/lwch/natpass/code/client/rule/shell"
-	"github.com/lwch/natpass/code/client/rule/vnc"
-	"github.com/lwch/natpass/code/network"
 	"github.com/lwch/runtime"
+	"org.mutantcat.chickreomte/code/client/conn"
+	"org.mutantcat.chickreomte/code/client/dashboard"
+	"org.mutantcat.chickreomte/code/client/global"
+	"org.mutantcat.chickreomte/code/client/rule"
+	"org.mutantcat.chickreomte/code/client/rule/bench"
+	"org.mutantcat.chickreomte/code/client/rule/code"
+	"org.mutantcat.chickreomte/code/client/rule/shell"
+	"org.mutantcat.chickreomte/code/client/rule/vnc"
+	"org.mutantcat.chickreomte/code/network"
 )
 
 type program struct {
@@ -62,7 +62,7 @@ func (p *program) run() {
 	}
 	logging.SetSizeRotate(logging.SizeRotateConfig{
 		Dir:         p.cfg.LogDir,
-		Name:        "np-cli",
+		Name:        "chickreomte-cli",
 		Size:        int64(p.cfg.LogSize.Bytes()),
 		Rotate:      p.cfg.LogRotate,
 		WriteStdout: stdout,
@@ -70,7 +70,7 @@ func (p *program) run() {
 	})
 	defer logging.Flush()
 
-	fg := figure.NewFigure("NatPass", "alligator2", false)
+	fg := figure.NewFigure("ChickReomte", "alligator2", false)
 	figure.Write(&logging.DefaultLogger, fg)
 	logging.DefaultLogger.Write(nil)
 
@@ -114,7 +114,7 @@ func (p *program) run() {
 					// fork /bin/bash command and ack
 					p.shellCreate(mgr, p.conn, msg)
 				case network.ConnectRequest_vnc:
-					// fork np-cli vnc child process and ack
+					// fork chickreomte-cli vnc child process and ack
 					p.vncCreate(p.confDir, mgr, p.conn, msg)
 				case network.ConnectRequest_bench:
 					// bench handler response ok directly

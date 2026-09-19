@@ -7,10 +7,10 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/client/conn"
-	"github.com/lwch/natpass/code/network"
-	"github.com/lwch/natpass/code/utils"
 	"google.golang.org/protobuf/proto"
+	"org.mutantcat.chickreomte/code/client/conn"
+	"org.mutantcat.chickreomte/code/network"
+	"org.mutantcat.chickreomte/code/utils"
 )
 
 var upgrader = websocket.Upgrader{}
@@ -18,6 +18,13 @@ var upgrader = websocket.Upgrader{}
 // WS websocket for forward data
 func (shell *Shell) WS(conn *conn.Conn, w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/ws/")
+	shell.RLock()
+	link := shell.links[id]
+	shell.RUnlock()
+	if link == nil {
+		http.NotFound(w, r)
+		return
+	}
 
 	local, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -47,6 +54,9 @@ func (shell *Shell) localForward(id string, local *websocket.Conn) {
 	shell.RLock()
 	link := shell.links[id]
 	shell.RUnlock()
+	if link == nil {
+		return
+	}
 	defer link.Close(true)
 	for {
 		_, data, err := local.ReadMessage()
@@ -65,6 +75,9 @@ func (shell *Shell) remoteForward(id string, local *websocket.Conn) {
 	shell.RLock()
 	link := shell.links[id]
 	shell.RUnlock()
+	if link == nil {
+		return
+	}
 	ch := link.remote.ChanRead(id)
 	defer link.Close(true)
 	for {
@@ -73,8 +86,7 @@ func (shell *Shell) remoteForward(id string, local *websocket.Conn) {
 			return
 		}
 		data, _ := proto.Marshal(msg)
-		link.recvBytes += uint64(len(data))
-		link.recvPacket++
+		link.recordReceived(uint64(len(data)))
 		switch msg.GetXType() {
 		case network.Msg_shell_data:
 			err := local.WriteMessage(websocket.TextMessage, msg.GetSdata().GetData())

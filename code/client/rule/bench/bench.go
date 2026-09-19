@@ -6,10 +6,10 @@ import (
 	"net/http"
 
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/client/conn"
-	"github.com/lwch/natpass/code/client/global"
-	"github.com/lwch/natpass/code/client/rule"
 	"github.com/lwch/runtime"
+	"org.mutantcat.chickreomte/code/client/conn"
+	"org.mutantcat.chickreomte/code/client/global"
+	"org.mutantcat.chickreomte/code/client/rule"
 )
 
 // Bench benchmark handler

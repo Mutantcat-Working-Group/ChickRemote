@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/client/conn"
-	"github.com/lwch/natpass/code/client/global"
-	"github.com/lwch/natpass/code/client/rule"
 	"github.com/lwch/runtime"
+	"org.mutantcat.chickreomte/code/client/conn"
+	"org.mutantcat.chickreomte/code/client/global"
+	"org.mutantcat.chickreomte/code/client/rule"
 )
 
 // Shell shell handler
@@ -67,8 +67,8 @@ func (shell *Shell) GetTarget() string {
 
 // GetLinks get rule links
 func (shell *Shell) GetLinks() []rule.Link {
-	ret := make([]rule.Link, 0, len(shell.links))
 	shell.RLock()
+	ret := make([]rule.Link, 0, len(shell.links))
 	for _, link := range shell.links {
 		ret = append(ret, link)
 	}

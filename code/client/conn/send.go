@@ -3,7 +3,7 @@ package conn
 import (
 	"time"
 
-	"github.com/lwch/natpass/code/network"
+	"org.mutantcat.chickreomte/code/network"
 )
 
 // SendKeepalive send keepalive message

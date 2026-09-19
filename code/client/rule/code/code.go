@@ -9,11 +9,11 @@ import (
 	"time"
 
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/client/conn"
-	"github.com/lwch/natpass/code/client/global"
-	"github.com/lwch/natpass/code/client/rule"
-	"github.com/lwch/natpass/code/network"
 	"github.com/lwch/runtime"
+	"org.mutantcat.chickreomte/code/client/conn"
+	"org.mutantcat.chickreomte/code/client/global"
+	"org.mutantcat.chickreomte/code/client/rule"
+	"org.mutantcat.chickreomte/code/network"
 )
 
 // Code code-server handler
@@ -59,8 +59,8 @@ func (code *Code) GetTarget() string {
 
 // GetLinks get rule links
 func (code *Code) GetLinks() []rule.Link {
-	ret := make([]rule.Link, 0, len(code.workspace))
 	code.RLock()
+	ret := make([]rule.Link, 0, len(code.workspace))
 	for _, link := range code.workspace {
 		ret = append(ret, link)
 	}
@@ -135,14 +135,25 @@ func (code *Code) new(conn *conn.Conn) (string, error) {
 		return "", err
 	}
 	link := code.NewLink(id, code.cfg.Target, nil, conn).(*Workspace)
+	ready := false
+	defer func() {
+		if !ready {
+			link.Close(true)
+		}
+	}()
 	conn.SendConnectReq(id, code.cfg)
 	ch := conn.ChanRead(id)
 	var repMsg *network.Msg
+	timer := time.NewTimer(time.Minute)
+	defer timer.Stop()
 	for {
 		var msg *network.Msg
 		select {
 		case msg = <-ch:
-		case <-time.After(time.Minute):
+			if msg == nil {
+				return "", errors.New("connection closed")
+			}
+		case <-timer.C:
 			logging.Error("create code-server %s by rule %s failed, timtout", link.id, link.parent.Name)
 			return "", errWaitingTimeout
 		}
@@ -164,5 +175,6 @@ func (code *Code) new(conn *conn.Conn) (string, error) {
 		link.GetID(), code.cfg.Name,
 		repMsg.GetTo(), repMsg.GetFrom())
 	go link.localRead()
+	ready = true
 	return id, nil
 }

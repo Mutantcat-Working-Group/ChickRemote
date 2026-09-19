@@ -2,13 +2,13 @@ package dashboard
 
 import (
 	"bytes"
+	"html/template"
 	"io"
 	"mime"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
-	"text/template"
 )
 
 // Render render asset file

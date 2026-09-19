@@ -9,9 +9,9 @@ import (
 	"github.com/common-nighthawk/go-figure"
 	"github.com/kardianos/service"
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/server/global"
-	"github.com/lwch/natpass/code/server/handler"
 	"github.com/lwch/runtime"
+	"org.mutantcat.chickreomte/code/server/global"
+	"org.mutantcat.chickreomte/code/server/handler"
 )
 
 type program struct {
@@ -40,7 +40,7 @@ func (p *program) run() {
 	}
 	logging.SetSizeRotate(logging.SizeRotateConfig{
 		Dir:         p.cfg.LogDir,
-		Name:        "np-svr",
+		Name:        "chickreomte-svr",
 		Size:        int64(p.cfg.LogSize.Bytes()),
 		Rotate:      p.cfg.LogRotate,
 		WriteStdout: stdout,
@@ -48,7 +48,7 @@ func (p *program) run() {
 	})
 	defer logging.Flush()
 
-	fg := figure.NewFigure("NatPass", "alligator2", false)
+	fg := figure.NewFigure("ChickReomte", "alligator2", false)
 	figure.Write(&logging.DefaultLogger, fg)
 	logging.DefaultLogger.Write(nil)
 

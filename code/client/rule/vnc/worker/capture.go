@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/client/rule/vnc/vncnetwork"
+	"org.mutantcat.chickreomte/code/client/rule/vnc/vncnetwork"
 )
 
 func (worker *Worker) runCapture() vncnetwork.ImageData {

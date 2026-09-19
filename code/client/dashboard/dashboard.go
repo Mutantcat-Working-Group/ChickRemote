@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"net/http/pprof"
 
-	"github.com/lwch/natpass/code/client/conn"
-	"github.com/lwch/natpass/code/client/global"
-	"github.com/lwch/natpass/code/client/rule"
+	"org.mutantcat.chickreomte/code/client/conn"
+	"org.mutantcat.chickreomte/code/client/global"
+	"org.mutantcat.chickreomte/code/client/rule"
 )
 
 // Dashboard dashboard object

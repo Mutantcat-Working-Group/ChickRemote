@@ -1,4 +1,4 @@
-module github.com/lwch/natpass
+module org.mutantcat.chickreomte
 
 go 1.18
 

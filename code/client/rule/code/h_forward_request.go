@@ -7,8 +7,8 @@ import (
 	"net/http"
 
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/client/conn"
-	"github.com/lwch/natpass/code/network"
+	"org.mutantcat.chickreomte/code/client/conn"
+	"org.mutantcat.chickreomte/code/network"
 )
 
 func (code *Code) handleRequest(conn *conn.Conn, workspace *Workspace, w http.ResponseWriter, r *http.Request) {

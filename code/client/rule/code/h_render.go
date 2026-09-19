@@ -2,14 +2,14 @@ package code
 
 import (
 	"bytes"
+	"html/template"
 	"io"
 	"mime"
 	"net/http"
 	"path/filepath"
 	"strings"
-	"text/template"
 
-	"github.com/lwch/natpass/code/client/conn"
+	"org.mutantcat.chickreomte/code/client/conn"
 )
 
 // Render render code-server

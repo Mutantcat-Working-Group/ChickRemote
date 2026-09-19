@@ -2,13 +2,13 @@ package app
 
 import (
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/client/conn"
-	"github.com/lwch/natpass/code/client/global"
-	"github.com/lwch/natpass/code/client/rule"
-	"github.com/lwch/natpass/code/client/rule/code"
-	"github.com/lwch/natpass/code/client/rule/shell"
-	"github.com/lwch/natpass/code/client/rule/vnc"
-	"github.com/lwch/natpass/code/network"
+	"org.mutantcat.chickreomte/code/client/conn"
+	"org.mutantcat.chickreomte/code/client/global"
+	"org.mutantcat.chickreomte/code/client/rule"
+	"org.mutantcat.chickreomte/code/client/rule/code"
+	"org.mutantcat.chickreomte/code/client/rule/shell"
+	"org.mutantcat.chickreomte/code/client/rule/vnc"
+	"org.mutantcat.chickreomte/code/network"
 )
 
 /*
@@ -47,6 +47,7 @@ func (p *program) shellCreate(mgr *rule.Mgr, conn *conn.Conn, msg *network.Msg) 
 	if err != nil {
 		logging.Error("create shell failed: %v", err)
 		conn.SendConnectError(msg.GetFrom(), msg.GetLinkId(), err.Error())
+		lk.Close(false)
 		return
 	}
 	conn.SendConnectOK(msg.GetFrom(), msg.GetLinkId())
@@ -70,10 +71,12 @@ func (p *program) vncCreate(confDir string, mgr *rule.Mgr, conn *conn.Conn, msg 
 		msg.GetLinkId(), create.GetName(),
 		msg.GetFrom(), p.cfg.ID)
 	lk.SetQuality(create.GetCvnc().GetQuality())
+	lk.SetCursor(create.GetCvnc().GetCursor())
 	err := lk.Fork(confDir)
 	if err != nil {
 		logging.Error("create vnc failed: %v", err)
 		conn.SendConnectError(msg.GetFrom(), msg.GetLinkId(), err.Error())
+		lk.Close(false)
 		return
 	}
 	conn.SendConnectOK(msg.GetFrom(), msg.GetLinkId())
@@ -105,8 +108,9 @@ func (p *program) codeCreate(confDir string, mgr *rule.Mgr, conn *conn.Conn, msg
 		msg.GetFrom(), p.cfg.ID)
 	err := workspace.Exec(p.cfg.CodeDir)
 	if err != nil {
-		logging.Error("create vnc failed: %v", err)
+		logging.Error("create code-server failed: %v", err)
 		conn.SendConnectError(msg.GetFrom(), msg.GetLinkId(), err.Error())
+		workspace.Close(false)
 		return
 	}
 	conn.SendConnectOK(msg.GetFrom(), msg.GetLinkId())

@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package network;
-option go_package="./;network";
+option go_package="org.mutantcat.chickreomte/code/network;network";
 
 import "connect.proto";
 import "forward.proto";

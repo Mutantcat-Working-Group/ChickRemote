@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package vncnetwork;
-option go_package="./;vncnetwork";
+option go_package="org.mutantcat.chickreomte/code/client/rule/vnc/vncnetwork;vncnetwork";
 
 message image_data {
     bool       ok = 1;

@@ -4,7 +4,7 @@ var page = {
         $('#code').on('load', function() {
             var qry = $('#code')[0].contentWindow.location.search;
             var params = new URLSearchParams(qry);
-            page.id = params.get('natpass_connection_id');
+            page.id = params.get('chickreomte_connection_id');
         });
         page.connect();
         setInterval(page.update_info, page.secs*1000);

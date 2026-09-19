@@ -3,8 +3,8 @@ package conn
 import (
 	"time"
 
-	"github.com/lwch/natpass/code/network"
 	"google.golang.org/protobuf/proto"
+	"org.mutantcat.chickreomte/code/network"
 )
 
 // SendShellData send shell data

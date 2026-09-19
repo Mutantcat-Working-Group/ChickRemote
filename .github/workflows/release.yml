@@ -10,17 +10,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - id: get_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v4
 
       - name: build
-        uses: lwch/natpass@builder
+        uses: Mutantcat-Working-Group/ChickRemote@builder
         env:
           BUILD_VERSION: ${{ steps.get_version.outputs.VERSION }}
 
       - name: release
-        uses: lwch/natpass@release
+        uses: Mutantcat-Working-Group/ChickRemote@release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BUILD_VERSION: ${{ steps.get_version.outputs.VERSION }}

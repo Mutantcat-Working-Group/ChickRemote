@@ -3,9 +3,9 @@ package worker
 import (
 	"github.com/gorilla/websocket"
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/client/rule/vnc/vncnetwork"
 	"github.com/lwch/rdesktop"
 	"google.golang.org/protobuf/proto"
+	"org.mutantcat.chickreomte/code/client/rule/vnc/vncnetwork"
 )
 
 func (worker *Worker) runMouse(data *vncnetwork.MouseData) {

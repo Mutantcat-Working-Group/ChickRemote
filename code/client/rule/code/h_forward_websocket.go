@@ -6,7 +6,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/network"
+	"org.mutantcat.chickreomte/code/network"
 )
 
 var upgrader = websocket.Upgrader{

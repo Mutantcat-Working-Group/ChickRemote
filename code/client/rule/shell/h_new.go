@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/client/conn"
-	"github.com/lwch/natpass/code/network"
 	"github.com/lwch/runtime"
+	"org.mutantcat.chickreomte/code/client/conn"
+	"org.mutantcat.chickreomte/code/network"
 )
 
 // New new shell
@@ -21,6 +21,12 @@ func (shell *Shell) New(conn *conn.Conn, w http.ResponseWriter, r *http.Request)
 		return
 	}
 	link := shell.NewLink(id, shell.cfg.Target, nil, conn).(*Link)
+	ready := false
+	defer func() {
+		if !ready {
+			link.Close(true)
+		}
+	}()
 	conn.SendConnectReq(id, shell.cfg)
 	ch := conn.ChanRead(id)
 	timeout := time.After(shell.readTimeout)
@@ -29,6 +35,12 @@ func (shell *Shell) New(conn *conn.Conn, w http.ResponseWriter, r *http.Request)
 		var msg *network.Msg
 		select {
 		case msg = <-ch:
+			if msg == nil {
+				http.Error(w, "connection closed", http.StatusBadGateway)
+				return
+			}
+		case <-r.Context().Done():
+			return
 		case <-timeout:
 			logging.Error("create shell %s by rule %s failed, timtout", link.id, link.parent.Name)
 			http.Error(w, "timeout", http.StatusBadGateway)
@@ -52,5 +64,6 @@ func (shell *Shell) New(conn *conn.Conn, w http.ResponseWriter, r *http.Request)
 	logging.Info("create link %s for shell rule [%s] from %s to %s",
 		link.GetID(), shell.cfg.Name,
 		repMsg.GetTo(), repMsg.GetFrom())
+	ready = true
 	fmt.Fprint(w, id)
 }

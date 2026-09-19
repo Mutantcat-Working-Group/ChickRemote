@@ -34,25 +34,25 @@ var page = {
                     recv_bytes += link.recv_bytes;
                     recv_packet += link.recv_packet;
                 });
-                var op = '';
+                var op = $('<td>');
                 switch (rule.type) {
                 case 'shell':
                 case 'vnc':
                 case 'code-server':
-                    op = `<a href="http://${location.host}/terminal.html?name=${rule.name}" target="_blank">连接</a>`;
+                    op.append($('<a>').attr({
+                        href: '/terminal.html?name=' + encodeURIComponent(rule.name),
+                        target: '_blank',
+                        rel: 'noopener'
+                    }).text('连接'));
                     break;
                 }
-                var str = `
-                <tr>
-                    <td>${rule.name}</td>
-                    <td>${rule.remote}</td>
-                    <td>${rule.type}</td>
-                    <td>${rule.links?rule.links.length:0}</td>
-                    <td>${humanize.bytes(recv_bytes)}/${humanize.bytes(send_bytes)}</td>
-                    <td>${recv_packet}/${send_packet}</td>
-                    <td>${op}</td>
-                </tr>`;
-                $('#rules tbody').append($(str));
+                var row = $('<tr>');
+                [rule.name, rule.remote, rule.type, rule.links ? rule.links.length : 0,
+                    humanize.bytes(recv_bytes) + '/' + humanize.bytes(send_bytes),
+                    recv_packet + '/' + send_packet].forEach(function(value) {
+                    row.append($('<td>').text(value));
+                });
+                $('#rules tbody').append(row.append(op));
             });
         });
     },

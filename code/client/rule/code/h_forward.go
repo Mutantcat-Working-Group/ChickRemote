@@ -4,8 +4,9 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/gorilla/websocket"
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/client/conn"
+	"org.mutantcat.chickreomte/code/client/conn"
 )
 
 // Forward forward code-server requests
@@ -13,7 +14,12 @@ func (code *Code) Forward(conn *conn.Conn, w http.ResponseWriter, r *http.Reques
 	srcPath := r.URL.Path
 	srcQuery := r.URL.Query()
 	name := strings.TrimPrefix(r.URL.Path, "/forward/")
-	name = name[:strings.Index(name, "/")]
+	end := strings.Index(name, "/")
+	if end <= 0 || !strings.HasPrefix(r.URL.Path, "/forward/") {
+		http.Error(w, "invalid workspace path", http.StatusBadRequest)
+		return
+	}
+	name = name[:end]
 
 	r.URL.Path = strings.TrimPrefix(r.URL.Path, "/forward/"+name)
 	if len(r.URL.Path) == 0 {
@@ -22,7 +28,7 @@ func (code *Code) Forward(conn *conn.Conn, w http.ResponseWriter, r *http.Reques
 
 	var id string
 
-	const argName = "natpass_connection_id"
+	const argName = "chickreomte_connection_id"
 
 	if r.URL.Path == "/" && len(r.FormValue(argName)) == 0 {
 		var err error
@@ -33,7 +39,7 @@ func (code *Code) Forward(conn *conn.Conn, w http.ResponseWriter, r *http.Reques
 			return
 		}
 		http.SetCookie(w, &http.Cookie{
-			Name:  "__NATPASS_CONNECTION_ID__",
+			Name:  "__CHICKREOMTE_CONNECTION_ID__",
 			Value: id,
 		})
 		srcQuery.Set(argName, id)
@@ -41,7 +47,7 @@ func (code *Code) Forward(conn *conn.Conn, w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	cookie, err := r.Cookie("__NATPASS_CONNECTION_ID__")
+	cookie, err := r.Cookie("__CHICKREOMTE_CONNECTION_ID__")
 	if err != nil {
 		logging.Error("get connection id: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -66,6 +72,5 @@ func (code *Code) Forward(conn *conn.Conn, w http.ResponseWriter, r *http.Reques
 }
 
 func (code *Code) isWebsocket(r *http.Request) bool {
-	upgrade := r.Header.Get("Connection")
-	return upgrade == "Upgrade"
+	return websocket.IsWebSocketUpgrade(r)
 }

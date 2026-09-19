@@ -1,75 +1,65 @@
-# 规则配置
+# 小鸡远程规则配置
 
-所有链接均为正向配置，由连接发起方进行配置
+[中文 README](../README.md) | [English README](../README.en.md) | [部署指南](startup.md)
 
-## shell规则
+规则由连接发起方配置，放在客户端配置的 `rules` 列表中，或通过示例的 `#include rule.d/*.yaml` 加载。下列代码块均为规则列表片段，不能单独作为完整客户端配置。
 
-shell规则用于创建一个网页端的命令行操作页面
+## 公共字段
 
-    - name: shell             # 链路名称
-      target: that            # 目标客户端ID
-      type: shell             # web shell
-      local_addr: 0.0.0.0     # 本地监听地址
-      #local_port: 8080        # 本地监听端口号
-      #exec: /bin/bash        # 运行命令
-                              # windows默认powershell或cmd
-                              # 其他系统bash或sh
-      env:                    # 环境变量设置
-        - TERM=xterm
+| 字段 | 含义 |
+| --- | --- |
+| `name` | 规则名称；在同一客户端配置中保持唯一 |
+| `target` | 受控端客户端 ID，示例为 `remote` |
+| `type` | `shell`、`vnc`、`code-server` 或用于测试的 `bench` |
+| `local_addr` | 控制端 Web 入口监听地址；建议 `127.0.0.1` |
+| `local_port` | 可选的 Web 入口端口；省略或为 `0` 时动态分配 |
 
-1. `name`: 该规则名称，必须全局唯一
-2. `target`: 对端客户端ID
-3. `type`: shell
-4. `local_addr`: 本地监听地址，如只允许局域网访问可绑定在局域网IP地址上
-5. `local_port`: 本地监听端口号，可选
-6. `exec`: 连接建立成功后的启动命令
-    - 指定该参数：直接使用设定的命令运行
-    - linux系统：优先查找bash命令，若没有则查找sh命令，否则报错
-    - windows系统：优先查找powershell命令，若没有则查找cmd命令，否则报错
-7. `env`: 进程启动时的环境变量设置
+规则端口提供的是本地 HTTP / WebSocket 服务，并非 SSH、RDP 或标准 VNC 协议端口。不要与管理面板或其他规则的端口冲突。管理页面和规则入口没有独立登录认证，不应直接对公网开放。
 
-## vnc规则
+## Shell 规则
 
-vnc规则用于创建一个网页端的远程桌面操作页面
+```yaml
+- name: shell
+  target: remote
+  type: shell
+  local_addr: 127.0.0.1
+  # local_port: 8081
+  # exec: /bin/bash
+  env:
+    - TERM=xterm
+```
 
-    - name: vnc            # 链路名称
-      target: that         # 目标客户端ID
-      type: vnc            # web vnc
-      local_addr: 0.0.0.0  # 本地监听地址
-      #local_port: 5900     # 本地监听端口号
-      fps: 10              # 刷新频率
+`exec` 为受控端要启动的可执行程序，不是带参数的整段 Shell 命令。省略时 Linux / macOS 优先选择 `bash`，其次为 `sh`；Windows 优先选择 `powershell`，其次为 `cmd`。`env` 为终端进程的环境变量列表。
 
-1. `name`: 该规则名称，必须全局唯一
-2. `target`: 对端客户端ID
-3. `type`: shell
-4. `local_addr`: 本地监听地址，如只允许局域网访问可绑定在局域网IP地址上
-5. `local_port`: 本地监听端口号，可选
-6. `fps`: 每秒钟截屏多少次，最高50
+## VNC 规则
 
-注意：
+```yaml
+- name: vnc
+  target: remote
+  type: vnc
+  local_addr: 127.0.0.1
+  # local_port: 8082
+  fps: 10
+```
 
-1. 创建vnc连接后远端服务会创建一个子进程进行截屏和键鼠操作，
-   主进程会在`6155~6955`之间选一个端口进行监听用于与子进程通信
-2. 使用rdp连接的windows主机，需要将np-cli.exe[注册为系统服务](startup.md#注册系统服务（可选）)，
-   否则在rdp窗口最小化或者rdp连接关闭后将无法刷新
-3. windows2008系统下需要启用sas策略才可使用ctrl+alt+del按钮进行解锁登录页面，配置方法如下：
+`fps` 为请求的每秒截屏次数，省略或设为 `0` 时使用 `10`，超过 `50` 时按 `50` 处理。实际帧率受屏幕尺寸、网络与系统性能影响。
 
-    1. 运行gpedit.msc打开组策略编辑器
-    2. 找到计算机配置 => 管理模板 => Windows组件 => Windows登录选项 => 禁用或启用软件安全注意序列
-    3. 在详情中设置为已启用，设置允许哪个软件生成软件安全注意序列为*服务*
+- 受控端创建子进程执行截图及键鼠操作，主进程在本机 `127.0.0.1:6155` 至 `127.0.0.1:6955` 中选择端口通信，不需要向公网开放该范围。
+- 现有后端不支持 Windows / Linux ARM。新版 macOS SDK 移除的截图 API 会导致客户端编译失败，见 [README](../README.md#平台与已知限制)。
+- macOS 需授予屏幕录制、辅助功能等权限；其他系统也需具备可访问的图形会话。
+- Windows RDP 最小化或断开后的捕获行为取决于系统与会话状态，部署时应验证[系统服务模式](startup.md#注册系统服务)下的行为。
+- 旧版 Windows 的 Ctrl+Alt+Del 模拟还可能需要配置软件安全注意序列（SAS）策略，应由管理员按实际系统版本评估。
 
-## code-server规则
+## code-server 规则
 
-vnc规则用于创建一个网页端的code-server页面，主要用于远程开发
+```yaml
+- name: code-server
+  target: remote
+  type: code-server
+  local_addr: 127.0.0.1
+  # local_port: 8083
+```
 
-    - name: code-server    # 链路名称
-      target: remote       # 目标客户端ID
-      type: code-server    # code-server
-      local_addr: 0.0.0.0  # 本地监听地址
-      #local_port: 8000     # 本地监听端口号
+受控端需自行安装 [code-server](https://github.com/coder/code-server) 并加入运行客户端的用户或系统服务的 `PATH`。它不会随小鸡远程自动安装。工作目录数据位置由客户端 `codedir` 控制；相对路径基于客户端可执行文件目录，而非配置文件目录。
 
-1. `name`: 该规则名称，必须全局唯一
-2. `target`: 对端客户端ID
-3. `type`: code-server
-4. `local_addr`: 本地监听地址，如只允许局域网访问可绑定在局域网IP地址上
-5. `local_port`: 本地监听端口号，可选
+配置变更后需重启客户端。跨机器访问 Web 入口时，应使用 VPN 或带认证的反向代理，同时限制对原始规则端口的直接访问。

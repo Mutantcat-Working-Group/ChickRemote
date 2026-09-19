@@ -8,11 +8,11 @@ import (
 
 	"github.com/kardianos/service"
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/client/global"
-	"github.com/lwch/natpass/code/client/rule/vnc"
-	"github.com/lwch/natpass/code/utils"
 	"github.com/lwch/runtime"
 	"github.com/spf13/cobra"
+	"org.mutantcat.chickreomte/code/client/global"
+	"org.mutantcat.chickreomte/code/client/rule/vnc"
+	"org.mutantcat.chickreomte/code/utils"
 )
 
 // User --user param
@@ -71,9 +71,9 @@ func buildService(p *program) service.Service {
 	}
 
 	svc, err := service.New(p, &service.Config{
-		Name:         "np-cli",
-		DisplayName:  "np-cli",
-		Description:  "natpass client",
+		Name:         "chickreomte-cli",
+		DisplayName:  "chickreomte-cli",
+		Description:  "ChickReomte client",
 		UserName:     User,
 		Arguments:    []string{"--conf", dir},
 		Dependencies: depends,
@@ -103,7 +103,7 @@ func (a *App) Install(*cobra.Command, []string) {
 	}
 	utils.BuildDir(cfg.LogDir, User)
 	utils.BuildDir(cfg.CodeDir, User)
-	fmt.Println("register service np-cli success")
+	fmt.Println("register service chickreomte-cli success")
 }
 
 // Uninstall unregister service
@@ -113,7 +113,7 @@ func (a *App) Uninstall(*cobra.Command, []string) {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	fmt.Println("unregister service np-cli success")
+	fmt.Println("unregister service chickreomte-cli success")
 }
 
 // Start start service
@@ -123,7 +123,7 @@ func (a *App) Start(*cobra.Command, []string) {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	fmt.Println("start service np-cli success")
+	fmt.Println("start service chickreomte-cli success")
 }
 
 // Stop stop service
@@ -133,7 +133,7 @@ func (a *App) Stop(*cobra.Command, []string) {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	fmt.Println("stop service np-cli success")
+	fmt.Println("stop service chickreomte-cli success")
 }
 
 // Restart restart service
@@ -143,7 +143,7 @@ func (a *App) Restart(*cobra.Command, []string) {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	fmt.Println("restart service np-cli success")
+	fmt.Println("restart service chickreomte-cli success")
 }
 
 // Status show service status
@@ -178,7 +178,7 @@ func (a *App) Vnc(*cobra.Command, []string) {
 	// }()
 	logging.SetSizeRotate(logging.SizeRotateConfig{
 		Dir:         cfg.LogDir,
-		Name:        "np-cli.vnc." + VncName,
+		Name:        "chickreomte-cli.vnc." + VncName,
 		Size:        int64(cfg.LogSize.Bytes()),
 		Rotate:      cfg.LogRotate,
 		WriteStdout: stdout,

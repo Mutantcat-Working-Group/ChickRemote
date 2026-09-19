@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/lwch/natpass/code/hash"
-	"github.com/lwch/natpass/code/utils"
 	"github.com/lwch/runtime"
 	"github.com/lwch/yaml"
+	"org.mutantcat.chickreomte/code/hash"
+	"org.mutantcat.chickreomte/code/utils"
 )
 
 // Rule rule config

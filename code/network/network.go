@@ -13,8 +13,8 @@ import (
 	"time"
 
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/network/encoding"
-	"github.com/lwch/natpass/code/network/encoding/proto"
+	"org.mutantcat.chickreomte/code/network/encoding"
+	"org.mutantcat.chickreomte/code/network/encoding/proto"
 )
 
 var errTooLong = errors.New("transport: too long")
@@ -95,6 +95,7 @@ func (c *Conn) unserialize(data []byte) (*Msg, error) {
 		if err != nil {
 			return nil, err
 		}
+		defer dec.Close()
 		var buffer bytes.Buffer
 		_, err = io.Copy(&buffer, dec)
 		if err != nil {
@@ -136,6 +137,10 @@ func (c *Conn) serialize(msg *Msg) ([]byte, error) {
 		}
 		_, err = io.Copy(enc, bytes.NewReader(data))
 		if err != nil {
+			enc.Close()
+			return nil, err
+		}
+		if err = enc.Close(); err != nil {
 			return nil, err
 		}
 		return buffer.Bytes(), nil
@@ -144,6 +149,9 @@ func (c *Conn) serialize(msg *Msg) ([]byte, error) {
 }
 
 func (c *Conn) write(data []byte, timeout time.Duration) error {
+	if c.ctx.Err() != nil {
+		return net.ErrClosed
+	}
 	hdr := header{
 		Size:     uint16(len(data)),
 		Checksum: crc32.ChecksumIEEE(data),
@@ -162,6 +170,8 @@ func (c *Conn) write(data []byte, timeout time.Duration) error {
 		return nil
 	case <-time.After(timeout):
 		return errTimeout
+	case <-c.ctx.Done():
+		return net.ErrClosed
 	}
 }
 

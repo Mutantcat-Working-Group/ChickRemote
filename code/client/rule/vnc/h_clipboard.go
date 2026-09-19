@@ -3,8 +3,9 @@ package vnc
 import (
 	"fmt"
 	"net/http"
+	"time"
 
-	"github.com/lwch/natpass/code/client/conn"
+	"org.mutantcat.chickreomte/code/client/conn"
 )
 
 // Clipboard get/set clipboard
@@ -17,21 +18,28 @@ func (v *VNC) Clipboard(conn *conn.Conn, w http.ResponseWriter, r *http.Request)
 }
 
 func (v *VNC) getClipboard(conn *conn.Conn, w http.ResponseWriter, r *http.Request) {
-	if v.link == nil {
+	link := v.GetLink()
+	if link == nil {
 		http.NotFound(w, r)
 		return
 	}
-	conn.SendVNCClipboardData(v.link.target, v.link.id, false, "")
-	data := <-v.chClipboard
-	fmt.Fprint(w, data.GetData())
+	conn.SendVNCClipboardData(link.target, link.id, false, "")
+	select {
+	case data := <-v.chClipboard:
+		fmt.Fprint(w, data.GetData())
+	case <-r.Context().Done():
+	case <-time.After(v.readTimeout):
+		http.Error(w, "clipboard timeout", http.StatusGatewayTimeout)
+	}
 }
 
 func (v *VNC) setClipboard(conn *conn.Conn, w http.ResponseWriter, r *http.Request) {
 	data := r.FormValue("data")
-	if v.link == nil {
+	link := v.GetLink()
+	if link == nil {
 		http.NotFound(w, r)
 		return
 	}
-	conn.SendVNCClipboardData(v.link.target, v.link.id, true, data)
+	conn.SendVNCClipboardData(link.target, link.id, true, data)
 	fmt.Fprint(w, "ok")
 }

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/lwch/natpass/code/client/rule"
+	"org.mutantcat.chickreomte/code/client/rule"
 )
 
 // Info information data

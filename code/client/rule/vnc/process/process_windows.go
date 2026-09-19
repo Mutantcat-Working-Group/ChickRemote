@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync/atomic"
 	"syscall"
 	"unicode/utf16"
 	"unsafe"
 
-	"github.com/lwch/natpass/code/client/rule/vnc/define"
-	"github.com/lwch/natpass/code/client/rule/vnc/vncnetwork"
 	"golang.org/x/sys/windows"
+	"org.mutantcat.chickreomte/code/client/rule/vnc/define"
+	"org.mutantcat.chickreomte/code/client/rule/vnc/vncnetwork"
 )
 
 func getLogonPid(sessionID uintptr) uint32 {
@@ -100,9 +101,9 @@ func createWorker(name, confDir string, tk windows.Token, showCursor bool) (*Pro
 	startup.Cb = uint32(unsafe.Sizeof(startup))
 	startup.Desktop = windows.StringToUTF16Ptr("WinSta0\\default")
 	startup.Flags = windows.STARTF_USESHOWWINDOW
-	str := dir + fmt.Sprintf(" vnc --conf %s --name %s --port %d", confDir, name, port)
+	str := windows.ComposeCommandLine([]string{dir, "vnc", "--conf", confDir, "--name", name, "--port", fmt.Sprint(port)})
 	if showCursor {
-		str += "--cursor"
+		str += " --cursor"
 	}
 	cmd := windows.StringToUTF16Ptr(str)
 	if tk == 0 {
@@ -113,8 +114,16 @@ func createWorker(name, confDir string, tk windows.Token, showCursor bool) (*Pro
 		err = windows.CreateProcessAsUser(tk, nil, cmd, nil, nil, false, windows.DETACHED_PROCESS, nil, nil, &startup, &process)
 	}
 	if err != nil {
+		p.Close()
 		return nil, err
 	}
-	p.pid = int(process.ProcessId)
+	atomic.StoreInt64(&p.pid, int64(process.ProcessId))
+	windows.CloseHandle(process.Thread)
+	windows.CloseHandle(process.Process)
+	select {
+	case <-p.doneChan():
+		p.kill()
+	default:
+	}
 	return &p, nil
 }

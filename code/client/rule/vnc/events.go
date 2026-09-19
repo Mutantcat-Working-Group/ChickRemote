@@ -4,10 +4,9 @@ import (
 	"encoding/json"
 
 	"github.com/lwch/logging"
-	"github.com/lwch/natpass/code/client/conn"
 )
 
-func (v *VNC) mouseEvent(remote *conn.Conn, data []byte) {
+func (link *Link) mouseEvent(data []byte) {
 	var payload struct {
 		Payload struct {
 			Button string `json:"button"`
@@ -21,11 +20,11 @@ func (v *VNC) mouseEvent(remote *conn.Conn, data []byte) {
 		logging.Error("unmarshal: %v", err)
 		return
 	}
-	remote.SendVNCMouse(v.link.target, v.link.id,
+	link.remote.SendVNCMouse(link.target, link.id,
 		payload.Payload.Button, payload.Payload.Status, payload.Payload.X, payload.Payload.Y)
 }
 
-func (v *VNC) keyboardEvent(remote *conn.Conn, data []byte) {
+func (link *Link) keyboardEvent(data []byte) {
 	var payload struct {
 		Payload struct {
 			Status string `json:"status"`
@@ -37,15 +36,15 @@ func (v *VNC) keyboardEvent(remote *conn.Conn, data []byte) {
 		logging.Error("unmarshal: %v", err)
 		return
 	}
-	remote.SendVNCKeyboard(v.link.target, v.link.id,
+	link.remote.SendVNCKeyboard(link.target, link.id,
 		payload.Payload.Status, payload.Payload.Key)
 }
 
-func (v *VNC) cadEvent(remote *conn.Conn) {
-	remote.SendVNCCADEvent(v.link.target, v.link.id)
+func (link *Link) cadEvent() {
+	link.remote.SendVNCCADEvent(link.target, link.id)
 }
 
-func (v *VNC) scrollEvent(remote *conn.Conn, data []byte) {
+func (link *Link) scrollEvent(data []byte) {
 	var payload struct {
 		Payload struct {
 			X int32 `json:"x"`
@@ -57,6 +56,6 @@ func (v *VNC) scrollEvent(remote *conn.Conn, data []byte) {
 		logging.Error("unmarshal: %v", err)
 		return
 	}
-	remote.SendVNCScroll(v.link.target, v.link.id,
+	link.remote.SendVNCScroll(link.target, link.id,
 		payload.Payload.X, payload.Payload.Y)
 }

@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/lwch/natpass/code/client/conn"
+	"org.mutantcat.chickreomte/code/client/conn"
 )
 
 // Ctrl change vnc rule config
@@ -20,10 +20,11 @@ func (v *VNC) Ctrl(conn *conn.Conn, w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		showCursor = false
 	}
-	if v.link == nil {
+	link := v.GetLink()
+	if link == nil {
 		http.NotFound(w, r)
 		return
 	}
-	conn.SendVNCCtrl(v.link.target, v.link.id, quality, showCursor)
+	conn.SendVNCCtrl(link.target, link.id, quality, showCursor)
 	fmt.Fprint(w, "ok")
 }

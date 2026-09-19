@@ -31,7 +31,7 @@ var dialer = websocket.Dialer{
 }
 
 func main() {
-	dir := "/home/lwch/src/natpass/code-server"
+	dir := "/home/lwch/src/ChickReomte/code-server"
 	exec := exec.Command("code-server", "--disable-update-check",
 		"--auth", "none",
 		"--socket", filepath.Join(dir, "code-server.sock"),
