@@ -6,3 +6,12 @@
 /run
 /*.yaml
 /test_conf
+/desktop/node_modules/
+/desktop/dist/
+/desktop/src-tauri/target/
+/desktop/src-tauri/binaries/
+/desktop/src-tauri/tauri.windows.generated.json
+/desktop/artifacts/
+/desktop/src-tauri/gen/
+/desktop/src-tauri/icons/android/
+/desktop/src-tauri/icons/ios/

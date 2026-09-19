@@ -1,0 +1,23 @@
+{
+  "name": "@mutantcat/chickreomte",
+  "version": "1.0.20260919",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc && vite build",
+    "test": "node --test scripts/*.test.mjs",
+    "prepare:sidecar": "node scripts/sidecar.mjs",
+    "desktop:dev": "tauri dev",
+    "desktop:build": "node scripts/package.mjs"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.11.0",
+    "lucide": "^0.468.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "~2.11.0",
+    "typescript": "~5.9.3",
+    "vite": "^7.1.0"
+  }
+}

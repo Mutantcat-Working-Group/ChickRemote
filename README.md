@@ -2,12 +2,20 @@
 
 **简体中文** | [English](README.en.md)
 
-[![Build](https://github.com/Mutantcat-Working-Group/ChickRemote/actions/workflows/build.yml/badge.svg)](https://github.com/Mutantcat-Working-Group/ChickRemote/actions/workflows/build.yml)
+[![Build](https://github.com/Mutantcat-Working-Group/ChickRemote/actions/workflows/desktop.yml/badge.svg)](https://github.com/Mutantcat-Working-Group/ChickRemote/actions/workflows/desktop.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 小鸡远程是一款可私有化部署的远程主机管理工具。通过 Go 中继服务和客户端，在浏览器中访问远程终端、桌面与 code-server 开发环境。
 
-当前提供命令行客户端和 Web 管理界面。Tauri 桌面包装尚未实现。
+当前版本 **1.0.20260919** 提供 Tauri 2 桌面客户端、命令行客户端和 Web 管理界面。桌面安装包内置 Go 客户端，无需另行安装 Go、Rust 或 Node.js。
+
+## 桌面安装
+
+从 [Releases](https://github.com/Mutantcat-Working-Group/ChickRemote/releases) 下载：Windows x64 使用 NSIS `.exe`，macOS 14+ 分别提供 Intel / Apple Silicon `.dmg`，Linux x64 提供 `.AppImage`。Windows 安装器内置 WebView2 离线安装程序；macOS 应用及 DMG 使用 ad-hoc 签名，不是 Apple 公证，首次启动可能需在系统设置中允许。Windows 也可能出现 SmartScreen 提示。Linux 需可执行权限和 FUSE 2，远程桌面使用 X11 会话。
+
+启动桌面应用，填写本机 ID、中继地址、共享密钥和可选的目标 ID，然后启动客户端并打开会话面板。受控端可将目标 ID 留空。需要先部署中继；桌面端不内置公共中继。默认启用 TLS，必须与中继配置匹配。macOS 受控端需要屏幕录制和辅助功能权限。
+
+配置和日志保存在用户应用数据目录，界面支持中英文切换。桌面配置仅创建 VNC 规则，终端和 code-server 的高级规则仍通过 CLI 配置使用。详见[桌面与发布指南](docs/desktop.md)。
 
 ## 功能
 
@@ -117,7 +125,7 @@ Go module 为 `org.mutantcat.chickreomte`，内部包路径统一使用该前缀
 ### 平台与已知限制
 
 - 项目包含 Linux、Windows、macOS 实现，但能力不完全一致；现有 VNC 后端不支持 Windows / Linux ARM。
-- **新版 macOS SDK**：`github.com/lwch/rdesktop v1.2.2` 使用已移除的 `CGDisplayCreateImage`。当前客户端及完整测试会在此类 SDK 上编译失败；服务端不受影响。需兼容 SDK 或迁移截图依赖。
+- **macOS**：本地维护的 MIT 截图库补丁使用 ScreenCaptureKit，兼容新 SDK，要求 macOS 14+。支持 Intel 和 Apple Silicon。
 - **Windows**：Web 资源目录使用符号链接。检出时需保留链接，或将链接替换为其指向的实际文件 / 目录。
 - **code-server**：需在受控端安装并加入 `PATH`，不会随本项目自动安装。
 - 相对 `log.dir` 和 `codedir` 基于可执行文件所在目录解析，而非配置文件目录。请保证目录可写，或配置绝对路径。

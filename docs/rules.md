@@ -45,7 +45,7 @@
 `fps` 为请求的每秒截屏次数，省略或设为 `0` 时使用 `10`，超过 `50` 时按 `50` 处理。实际帧率受屏幕尺寸、网络与系统性能影响。
 
 - 受控端创建子进程执行截图及键鼠操作，主进程在本机 `127.0.0.1:6155` 至 `127.0.0.1:6955` 中选择端口通信，不需要向公网开放该范围。
-- 现有后端不支持 Windows / Linux ARM。新版 macOS SDK 移除的截图 API 会导致客户端编译失败，见 [README](../README.md#平台与已知限制)。
+- 现有后端不支持 Windows / Linux ARM。macOS 使用 ScreenCaptureKit，要求 macOS 14+，支持 Intel 和 Apple Silicon；Linux 截图要求 X11。macOS requires 14+; Linux capture requires X11.
 - macOS 需授予屏幕录制、辅助功能等权限；其他系统也需具备可访问的图形会话。
 - Windows RDP 最小化或断开后的捕获行为取决于系统与会话状态，部署时应验证[系统服务模式](startup.md#注册系统服务)下的行为。
 - 旧版 Windows 的 Ctrl+Alt+Del 模拟还可能需要配置软件安全注意序列（SAS）策略，应由管理员按实际系统版本评估。

@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	version      string = "0.0.0"
+	version      string = "1.0.20260919"
 	gitHash      string
 	gitReversion string
 	buildTime    string

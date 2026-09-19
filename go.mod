@@ -2,6 +2,8 @@ module org.mutantcat.chickreomte
 
 go 1.18
 
+replace github.com/lwch/rdesktop => ./third_party/rdesktop
+
 require (
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be
 	github.com/creack/pty v1.1.21

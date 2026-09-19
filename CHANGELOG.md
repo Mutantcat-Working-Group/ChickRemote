@@ -2,14 +2,18 @@
 
 [中文 README](README.md) | [English README](README.en.md) | [当前部署指南](docs/startup.md)
 
-## 未发布
+## 1.0.20260919
+
+- 新增 Tauri 2 桌面客户端，内置 Go 引擎，支持中英文配置、启停和状态查看。
+- 新增标签触发的四目标原生 CI：Windows NSIS、macOS 双架构 ad-hoc DMG、Linux AppImage 和 SHA-256 清单。
+- macOS 截图迁移至 ScreenCaptureKit，修复新 SDK 下无法构建的问题，最低 macOS 14。
 
 - 项目名称统一为“小鸡远程 / ChickReomte”，程序及服务名称为 `chickreomte-cli`、`chickreomte-svr`。
 - Go module 与内部包路径迁移到 `org.mutantcat.chickreomte`，GitHub 仓库地址不变，Protobuf 协议包名保留。
 - 重写中英文 README，同步部署、规则、架构和安全文档。
 - 统一 MIT 授权说明，移除与其冲突的非商业用途限制，保留原作者版权声明。
 
-以下为历史版本记录，按原有顺序保留。旧参数、独立 VNC 程序名及平台限制仅对应相应版本，当前使用方式以部署指南为准。Tauri 桌面包装尚未实现，不属于已发布功能。
+以下为历史版本记录，按原有顺序保留。旧参数、独立 VNC 程序名及平台限制仅对应相应版本，当前使用方式以部署指南为准。
 
 ## v0.0.1
 

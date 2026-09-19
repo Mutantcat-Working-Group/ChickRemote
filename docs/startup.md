@@ -8,7 +8,7 @@
 
 按 [README 构建说明](../README.md#从源码构建)生成 `bin/chickreomte-svr` 和 `bin/chickreomte-cli`，或从 [Releases](https://github.com/Mutantcat-Working-Group/ChickRemote/releases) 获取适合平台的包。旧发行包不一定包含当前源码的命名和修复。
 
-当前 macOS 新版 SDK 与原生截图依赖存在编译兼容问题，详见 README 的已知限制。当前没有已实现的 Tauri 桌面包装。
+Tauri 2 桌面端安装、配置和发布说明见[桌面指南](desktop.md)。macOS 截图已迁移至 ScreenCaptureKit，要求 macOS 14+。Desktop installation and release instructions are in the [desktop guide](desktop.md); macOS capture requires macOS 14+.
 
 ## 配置与安全边界
 

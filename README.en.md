@@ -2,12 +2,20 @@
 
 [简体中文](README.md) | **English**
 
-[![Build](https://github.com/Mutantcat-Working-Group/ChickRemote/actions/workflows/build.yml/badge.svg)](https://github.com/Mutantcat-Working-Group/ChickRemote/actions/workflows/build.yml)
+[![Build](https://github.com/Mutantcat-Working-Group/ChickRemote/actions/workflows/desktop.yml/badge.svg)](https://github.com/Mutantcat-Working-Group/ChickRemote/actions/workflows/desktop.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ChickReomte is a self-hosted remote host management tool. A Go relay server and clients provide browser access to remote terminals, desktops, and code-server development environments.
 
-The current project provides a command-line client and a web dashboard. The Tauri desktop wrapper is not implemented yet.
+Version **1.0.20260919** includes a Tauri 2 desktop client, command-line client and web dashboard. Desktop installers bundle the Go client; users do not need Go, Rust or Node.js.
+
+## Desktop Installation
+
+Download from [Releases](https://github.com/Mutantcat-Working-Group/ChickRemote/releases): Windows x64 NSIS `.exe`, separate Intel and Apple Silicon `.dmg` packages for macOS 14+, or Linux x64 `.AppImage`. Windows bundles the offline WebView2 installer. The macOS app and DMG are ad-hoc signed, not Apple-notarized; allow the app in System Settings when prompted. Windows SmartScreen warnings are also possible. Linux requires executable permission and FUSE 2; remote desktop capture requires X11.
+
+Enter a unique device ID, relay address, shared secret and optional target ID, then start the client and open sessions. Leave the target empty on a controlled device. Deploy a relay first; no public relay is bundled. TLS is enabled by default and must match the relay configuration. Grant Screen Recording and Accessibility permissions on controlled Macs.
+
+Settings and logs live in the user's application data directory. The interface supports Chinese and English. Desktop settings create a VNC rule; advanced terminal and code-server rules remain available through CLI configuration. See the [desktop and release guide](docs/desktop.md).
 
 ## Features
 
@@ -117,7 +125,7 @@ The Go module is `org.mutantcat.chickreomte`; internal package paths use that pr
 ### Platforms and Known Limitations
 
 - The project includes Linux, Windows, and macOS implementations, with different capabilities. The current VNC backend does not support Windows / Linux ARM.
-- **Recent macOS SDKs**: `github.com/lwch/rdesktop v1.2.2` uses the removed `CGDisplayCreateImage` API. The client and full test suite currently fail to compile with these SDKs. The server is unaffected. A compatible SDK or a screenshot backend migration is required.
+- **macOS**: a local MIT-licensed capture patch uses ScreenCaptureKit with modern SDKs, requiring macOS 14+. Intel and Apple Silicon are supported.
 - **Windows**: web asset directories use symbolic links. Preserve these when checking out the repository, or replace them with their actual target files / directories.
 - **code-server**: install it on the remote host and add it to `PATH`; it is not installed automatically by this project.
 - Relative `log.dir` and `codedir` paths are resolved against the executable directory, not the configuration directory. Ensure these locations are writable or configure absolute paths.

@@ -67,7 +67,7 @@ rules:
 
 共享密钥握手不是浏览器登录系统，也不提供细粒度主机授权。中继 TLS 保护客户端到中继的链路，不是客户端之间的端到端加密；中继可以处理转发消息，应视为可信基础设施。
 
-管理面板与规则入口不提供独立登录认证，需通过回环绑定、VPN 或外部认证保护。仅在已授权设备上运行，详见[安全说明](../SECURITY.md)。当前实现为 CLI 和 Web 管理界面，Tauri 桌面包装尚未实现。
+管理面板与规则入口不提供独立登录认证，需通过回环绑定、VPN 或外部认证保护。仅在已授权设备上运行，详见[安全说明](../SECURITY.md)。Tauri 2 桌面端托管 Go 客户端并生成回环配置，远程页面在系统浏览器打开，不获得 Tauri 权限。The Tauri desktop controller owns the Go client; remote pages open outside its privileged webview. See [desktop architecture and release guide](desktop.md).
 
 ## 历史图示
 
