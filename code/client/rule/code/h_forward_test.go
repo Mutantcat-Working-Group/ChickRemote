@@ -30,3 +30,13 @@ func TestWebsocketHeaderTokens(t *testing.T) {
 		t.Fatal("accepted missing websocket header")
 	}
 }
+
+func TestConnectionCookieSecurity(t *testing.T) {
+	for _, scheme := range []string{"http", "https"} {
+		r := httptest.NewRequest("GET", scheme+"://localhost/forward/workspace/", nil)
+		cookie := connectionCookie(r, "session")
+		if !cookie.HttpOnly || cookie.SameSite != http.SameSiteLaxMode || cookie.Secure != (scheme == "https") {
+			t.Fatalf("unexpected %s cookie: %#v", scheme, cookie)
+		}
+	}
+}

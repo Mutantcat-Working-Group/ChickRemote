@@ -154,13 +154,9 @@ go test ./code/network/... ./code/server/... ./code/hash ./code/utils
 
 ## 界面预览
 
-以下为历史版本截图，可能含旧品牌，不代表当前版本的全部界面。
+桌面客户端界面预览：
 
-![管理面板](docs/imgs/dashboard.png)
-
-![远程终端](docs/imgs/shell.gif)
-
-![远程桌面](docs/imgs/vnc.gif)
+![小鸡远程桌面客户端](docs/imgs/desktop.png)
 
 ## 文档与贡献
 

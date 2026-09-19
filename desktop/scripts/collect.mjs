@@ -1,7 +1,9 @@
 import { readdirSync, mkdirSync, copyFileSync, writeFileSync, readFileSync, mkdtempSync, rmdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
+import { once } from 'node:events';
+import { setTimeout as delay } from 'node:timers/promises';
 import { createHash } from 'node:crypto';
 const version = JSON.parse(readFileSync('package.json')).version;
 const platform = process.env.ARTIFACT_PLATFORM;
@@ -20,6 +22,16 @@ if (extension === '.dmg') {
   execFileSync('hdiutil', ['attach', output, '-mountpoint', mount, '-nobrowse', '-readonly'], { input: 'Y\n', stdio: ['pipe', 'inherit', 'inherit'] });
   try {
     execFileSync('codesign', ['--verify', '--deep', '--strict', join(mount, 'ChickReomte.app')], { stdio: 'inherit' });
+    const bin = join(mount, 'ChickReomte.app/Contents/MacOS');
+    execFileSync(join(bin, 'chickreomte-cli'), ['version'], { stdio: 'inherit' });
+    const app = spawn(join(bin, 'chickreomte'), [], { stdio: 'inherit' });
+    const exited = once(app, 'exit');
+    try {
+      await Promise.race([delay(5000), exited.then(([code]) => { throw new Error(`Packaged app exited early: ${code}`); })]);
+    } finally {
+      if (app.exitCode === null) app.kill('SIGTERM');
+      await exited;
+    }
   } finally {
     execFileSync('hdiutil', ['detach', mount], { stdio: 'inherit' });
     rmdirSync(mount);

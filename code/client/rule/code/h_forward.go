@@ -38,10 +38,7 @@ func (code *Code) Forward(conn *conn.Conn, w http.ResponseWriter, r *http.Reques
 			http.Error(w, err.Error(), http.StatusBadGateway)
 			return
 		}
-		http.SetCookie(w, &http.Cookie{
-			Name:  "__CHICKREOMTE_CONNECTION_ID__",
-			Value: id,
-		})
+		http.SetCookie(w, connectionCookie(r, id))
 		srcQuery.Set(argName, id)
 		http.Redirect(w, r, srcPath+"?"+srcQuery.Encode(), http.StatusTemporaryRedirect)
 		return
@@ -68,6 +65,17 @@ func (code *Code) Forward(conn *conn.Conn, w http.ResponseWriter, r *http.Reques
 		code.handleWebsocket(workspace, w, r)
 	} else {
 		code.handleRequest(conn, workspace, w, r)
+	}
+}
+
+func connectionCookie(r *http.Request, id string) *http.Cookie {
+	return &http.Cookie{
+		Name:     "__CHICKREOMTE_CONNECTION_ID__",
+		Value:    id,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		// Direct local HTTP is supported; do not trust arbitrary forwarded headers.
+		Secure: r.TLS != nil,
 	}
 }
 

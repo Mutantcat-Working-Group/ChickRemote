@@ -154,13 +154,9 @@ go test ./code/network/... ./code/server/... ./code/hash ./code/utils
 
 ## Preview
 
-These screenshots show historical versions and may contain previous branding. They do not represent every part of the current interface.
+Desktop client interface preview:
 
-![Dashboard](docs/imgs/dashboard.png)
-
-![Remote terminal](docs/imgs/shell.gif)
-
-![Remote desktop](docs/imgs/vnc.gif)
+![ChickReomte desktop client](docs/imgs/desktop.png)
 
 ## Documentation and Contributing
 
