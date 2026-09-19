@@ -10,7 +10,7 @@ Windows NSIS / macOS Intel and Apple Silicon DMG / Linux AppImage releases.
 - [x] Build a compact bilingual desktop control surface with local-only IPC.
 - [x] Add reproducible native packaging, version checks, and tag-triggered CI.
 - [x] Update bilingual documentation and installation/security limitations.
-- [ ] Run local tests/builds, push commits and version tag, inspect CI artifacts.
+- [x] Run local tests/builds, push commits and version tag, inspect CI artifacts.
 
 ## Boundaries
 
@@ -26,3 +26,21 @@ Detached jobs launched inside remote shells must be stopped separately.
 Go tests and native builds; Rust validation/configuration/lifecycle tests;
 frontend build and desktop/mobile layout checks; version mapping tests;
 all four native CI jobs; release filenames, signatures, and SHA-256 checksums.
+
+## Release Evidence
+
+- Published tag: `v1.0.20260919`, source commit `2b8b547`.
+- [Release](https://github.com/Mutantcat-Working-Group/ChickRemote/releases/tag/v1.0.20260919)
+- [Native build and release run](https://github.com/Mutantcat-Working-Group/ChickRemote/actions/runs/35431689198): all four targets and publication passed.
+- Windows silent installation and installed application launch passed; Linux
+  extracted AppImage launch passed under Xvfb; both macOS DMGs passed app launch,
+  app/DMG signature verification and disk-image verification.
+- All four installer SHA-256 checks passed before publication.
+- [CodeQL](https://github.com/Mutantcat-Working-Group/ChickRemote/actions/runs/35431689414)
+  passed; no open CodeQL alerts at publication time.
+- Local full Go tests, `go vet`, and all three Node packaging tests passed.
+
+Launch checks are smoke tests, not a complete interactive remote-control test.
+Screen Recording/Accessibility permissions and physical input/capture still
+require verification on user machines. Ad-hoc signatures do not bypass
+Gatekeeper, and unsigned Windows installers may trigger SmartScreen.
