@@ -27,14 +27,14 @@ Windows is not Authenticode-signed and may show SmartScreen. Do not disable syst
 
 先按[部署指南](startup.md)准备中继。各设备使用不同 ID、同一中继和强随机密钥。
 TLS 默认开启并验证证书。目标 ID 留空表示不生成控制规则；填写目标 ID 会创建 VNC 规则。
-保存并启动后，点击会话面板进入浏览器。关闭窗口退出应用会停止其客户端与会话子进程。
+保存并启动后，点击会话面板进入浏览器。关闭窗口退出应用会停止其客户端。请在退出前关闭远程 Shell 中自行启动的后台任务。
 
 Deploy a relay using the [startup guide](startup.md). Use unique device IDs and the same relay and strong shared secret.
 TLS is enabled with certificate verification. An empty target creates no control rule; a target creates a VNC rule.
-Save, start, and open the browser dashboard. Exiting the desktop app stops its client and session processes.
+Save, start, and open the browser dashboard. Exiting the desktop app stops its client. Stop any detached background tasks you started in remote shells before exiting.
 
 配置 / Settings: Tauri `app_data_dir()/settings.json`。密钥以本机配置文件形式保存，不是系统钥匙串；Unix 目录权限 0700、文件 0600。
-日志 / Logs: `engine.log` and `logs/` under the same directory. Windows client logs primarily use `logs/`.
+日志 / Logs: `engine.log` and `logs/` under the same directory.
 请勿分享包含密钥的配置文件。Do not share settings containing credentials.
 
 桌面端 HTTP 入口固定监听回环地址。远程会话在系统浏览器中打开，不能调用 Tauri 原生接口。

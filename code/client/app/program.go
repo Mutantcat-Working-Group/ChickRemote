@@ -57,7 +57,7 @@ func (p *program) run() {
 
 	// initialize logging
 	stdout := true
-	if rt.GOOS == "windows" {
+	if rt.GOOS == "windows" && os.Getenv("CHICKREOMTE_DESKTOP") != "1" {
 		stdout = false
 	}
 	logging.SetSizeRotate(logging.SizeRotateConfig{

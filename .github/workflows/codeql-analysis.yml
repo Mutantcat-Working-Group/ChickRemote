@@ -15,14 +15,24 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [go, javascript-typescript]
+        include:
+          - language: go
+            build-mode: manual
+          - language: javascript-typescript
+            build-mode: none
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
           go-version: '1.25.x'
-      - uses: github/codeql-action/init@v3
+      - name: Native dependencies
+        if: matrix.language == 'go'
+        run: sudo apt-get update && sudo apt-get install -y libx11-dev libxtst-dev libxrandr-dev libxinerama-dev libxcursor-dev libxfixes-dev
+      - uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
-          build-mode: none
-      - uses: github/codeql-action/analyze@v3
+          build-mode: ${{ matrix.build-mode }}
+      - name: Build Go application
+        if: matrix.language == 'go'
+        run: sh build
+      - uses: github/codeql-action/analyze@v4

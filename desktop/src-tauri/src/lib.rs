@@ -107,6 +107,7 @@ fn start_client(app: tauri::AppHandle, state: State<Shared>) -> Result<(), Strin
     command
         .arg("--conf")
         .arg(config_path)
+        .env("CHICKREOMTE_DESKTOP", "1")
         .current_dir(&dir)
         .stdin(Stdio::null())
         .stderr(log.try_clone().map_err(|e| e.to_string())?)

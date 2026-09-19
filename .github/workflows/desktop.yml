@@ -58,11 +58,20 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libssl-dev librsvg2-dev libayatana-appindicator3-dev patchelf libx11-dev libxtst-dev libxrandr-dev libxinerama-dev libxcursor-dev libxfixes-dev libfuse2 xclip
+      - name: Install Windows C compiler
+        id: msys2
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          install: mingw-w64-ucrt-x86_64-gcc
       - name: Windows C compiler
         if: runner.os == 'Windows'
+        env:
+          MSYS2_LOCATION: ${{ steps.msys2.outputs.msys2-location }}
         run: |
-          echo 'C:\msys64\mingw64\bin' >> "$GITHUB_PATH"
-          echo 'CC=C:\msys64\mingw64\bin\gcc.exe' >> "$GITHUB_ENV"
+          echo "$MSYS2_LOCATION/ucrt64/bin" >> "$GITHUB_PATH"
+          echo "CC=$MSYS2_LOCATION/ucrt64/bin/gcc.exe" >> "$GITHUB_ENV"
       - name: Install frontend dependencies
         working-directory: desktop
         run: npm ci
@@ -74,6 +83,9 @@ jobs:
         run: npm run prepare:sidecar
       - name: Go tests
         run: go test ./... -count=1 -timeout 120s
+      - name: Client connection smoke test
+        working-directory: desktop
+        run: node scripts/smoke.mjs
       - name: Frontend build
         working-directory: desktop
         run: npm run build

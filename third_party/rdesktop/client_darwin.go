@@ -39,11 +39,7 @@ func (cli *osBase) Close() {
 }
 
 func getDisplayID() C.CGDirectDisplayID {
-	var id C.CGDirectDisplayID
-	if C.CGGetActiveDisplayList(C.uint32_t(1), (*C.CGDirectDisplayID)(unsafe.Pointer(&id)), nil) != C.kCGErrorSuccess {
-		return 0
-	}
-	return id
+	return C.CGMainDisplayID()
 }
 
 func (cli *osBase) Size() (image.Point, error) {
@@ -76,7 +72,13 @@ func (cli *osBase) GetCursor() (*image.RGBA, error) {
 
 // MouseMove move mouse to x,y
 func (cli *osBase) MouseMove(x, y int) error {
-	pt := C.CGPointMake(C.double(x), C.double(y))
+	bounds := C.CGDisplayBounds(cli.id)
+	width, height := C.CGDisplayPixelsWide(cli.id), C.CGDisplayPixelsHigh(cli.id)
+	if width == 0 || height == 0 {
+		return fmt.Errorf("display is unavailable")
+	}
+	// Capture uses physical pixels; CoreGraphics cursor coordinates use points.
+	pt := C.CGPointMake(C.double(x)*bounds.size.width/C.double(width), C.double(y)*bounds.size.height/C.double(height))
 	err := C.CGDisplayMoveCursorToPoint(cli.id, pt)
 	if err != 0 {
 		return fmt.Errorf("can not move: %d", err)
