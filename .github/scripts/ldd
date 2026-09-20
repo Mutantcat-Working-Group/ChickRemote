@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# ldd shim used only while Tauri bundles the Linux AppImage. linuxdeploy
+# aborts with "Failed to run ldd: exited with code 1" when ldd is run against
+# the Go sidecar after Tauri patches its RUNPATH, so report that sidecar as
+# needing no libraries and delegate every other file to the real ldd.
+set -euo pipefail
+
+for arg in "$@"; do
+  case "$arg" in
+    -*) continue ;;
+    *chickreomte-cli*)
+      printf '\tnot a dynamic executable\n'
+      exit 0
+      ;;
+  esac
+done
+
+exec /usr/bin/ldd "$@"

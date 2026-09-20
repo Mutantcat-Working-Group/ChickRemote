@@ -104,7 +104,13 @@ jobs:
         env:
           APPIMAGE_EXTRACT_AND_RUN: '1'
           NO_STRIP: '1'
-        run: npm run desktop:build -- --bundles ${{ matrix.bundle }} --verbose
+        run: |
+          # Use the ldd shim on the arm64 runner so linuxdeploy does not abort
+          # on the patched Go sidecar.
+          if [ "${{ matrix.platform }}" = "linux-aarch64" ]; then
+            export PATH="$GITHUB_WORKSPACE/.github/scripts:$PATH"
+          fi
+          npm run desktop:build -- --bundles ${{ matrix.bundle }} --verbose
       - name: Verify and collect installer
         working-directory: desktop
         run: node scripts/collect.mjs
