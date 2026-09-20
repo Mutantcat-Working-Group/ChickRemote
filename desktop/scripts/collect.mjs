@@ -17,6 +17,8 @@ mkdirSync('artifacts', { recursive: true });
 const name = `ChickReomte_${version}_${platform}${extension}`;
 const output = join('artifacts', name);
 copyFileSync(join(source, files[0]), output);
+const archive = `ChickReomte_${version}_${platform}.tar.gz`;
+execFileSync('tar', ['-czf', join('artifacts', archive), '-C', 'artifacts', name]);
 if (extension === '.dmg') {
   const mount = mkdtempSync(join(tmpdir(), 'chickreomte-dmg-'));
   execFileSync('hdiutil', ['attach', output, '-mountpoint', mount, '-nobrowse', '-readonly'], { input: 'Y\n', stdio: ['pipe', 'inherit', 'inherit'] });
@@ -42,4 +44,6 @@ if (extension === '.dmg') {
 }
 const hash = createHash('sha256').update(readFileSync(output)).digest('hex');
 writeFileSync(`${output}.sha256`, `${hash}  ${name}\n`);
+const archiveHash = createHash('sha256').update(readFileSync(join('artifacts', archive))).digest('hex');
+writeFileSync(`${join('artifacts', archive)}.sha256`, `${archiveHash}  ${archive}\n`);
 console.log(output);
