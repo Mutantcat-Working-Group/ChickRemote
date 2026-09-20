@@ -1,23 +1,18 @@
-# ChickReomte (小鸡远程)
+<div align="center">
+<img src="./logo.png" width="100" alt="ChickReomte logo" />
+<h2>ChickReomte</h2>
+</div>
 
 [简体中文](README.md) | **English**
 
 [![Build](https://github.com/Mutantcat-Working-Group/ChickRemote/actions/workflows/desktop.yml/badge.svg)](https://github.com/Mutantcat-Working-Group/ChickRemote/actions/workflows/desktop.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-ChickReomte is a self-hosted remote host management tool. A Go relay server and clients provide browser access to remote terminals, desktops, and code-server development environments.
+### 1. Overview
+
+ChickReomte (小鸡远程) is a **self-hosted remote host management tool**. A Go relay server and clients provide browser access to remote terminals, desktops, and code-server development environments.
 
 Version **1.0.20260919** includes a Tauri 2 desktop client, command-line client and web dashboard. Desktop installers bundle the Go client; users do not need Go, Rust or Node.js.
-
-## Desktop Installation
-
-Download from [Releases](https://github.com/Mutantcat-Working-Group/ChickRemote/releases): Windows x64 NSIS `.exe`, separate Intel and Apple Silicon `.dmg` packages for macOS 14+, or Linux x64 `.AppImage`. Windows bundles the offline WebView2 installer. The macOS app and DMG are ad-hoc signed, not Apple-notarized; allow the app in System Settings when prompted. Windows SmartScreen warnings are also possible. Linux requires executable permission and FUSE 2; remote desktop capture requires X11.
-
-Enter a unique device ID, relay address, shared secret and optional target ID, then start the client and open sessions. Leave the target empty on a controlled device. Deploy a relay first; no public relay is bundled. TLS is enabled by default and must match the relay configuration. Grant Screen Recording and Accessibility permissions on controlled Macs.
-
-Settings and logs live in the user's application data directory. The interface supports Chinese and English. Desktop settings create a VNC rule; advanced terminal and code-server rules remain available through CLI configuration. See the [desktop and release guide](docs/desktop.md).
-
-## Features
 
 | Feature | Description |
 | --- | --- |
@@ -29,7 +24,24 @@ Settings and logs live in the user's application data directory. The interface s
 | Transport | Protobuf messages, virtual link multiplexing, and optional TLS |
 | Service operation | Foreground execution and system service registration |
 
-## Architecture
+### 2. Platform Support and Installation
+
+Download the package for your platform from **[Releases](https://github.com/Mutantcat-Working-Group/ChickRemote/releases)**:
+
+| Platform | Architecture | Package | Requirements |
+| --- | --- | --- | --- |
+| Windows | x64 | NSIS `.exe` | Offline WebView2 installer included |
+| macOS | Apple Silicon / ARM64 | `.dmg` | macOS 14+, ad-hoc signed |
+| macOS | Intel / x64 | `.dmg` | macOS 14+, ad-hoc signed |
+| Linux | x64 | `.AppImage` | Executable permission, FUSE 2; X11 for remote capture |
+
+The macOS app and DMG are ad-hoc signed, not Apple-notarized; allow the app in System Settings when prompted. Windows SmartScreen warnings are also possible. Verify downloaded installers against the release's `SHA256SUMS.txt`.
+
+Enter a unique device ID, relay address, shared secret and optional target ID, then start the client and open sessions. Leave the target empty on a controlled device. Deploy a relay first; no public relay is bundled. TLS is enabled by default and must match the relay configuration. Grant Screen Recording and Accessibility permissions on controlled Macs.
+
+Settings and logs live in the user's application data directory. The interface supports Chinese and English. Desktop settings create a VNC rule; advanced terminal and code-server rules remain available through CLI configuration. See the [desktop and release guide](docs/desktop.md).
+
+### 3. Architecture
 
 ```text
 Browser -> Local chickreomte-cli -> Relay chickreomte-svr <- Remote chickreomte-cli
@@ -41,11 +53,11 @@ Browser -> Local chickreomte-cli -> Relay chickreomte-svr <- Remote chickreomte-
 
 Local and remote roles use the same client binary with different configurations. See [architecture and implementation](docs/desc.md) for details (Chinese).
 
-## Quick Start
+### 4. Quick Start
 
 Run these commands from the repository root with binaries built for your machine; see the next section for source builds. Release packages are listed under [Releases](https://github.com/Mutantcat-Working-Group/ChickRemote/releases). Older packages may use different names and contents from the current source tree.
 
-### 1. Prepare Configuration
+#### 1. Prepare Configuration
 
 | File | Purpose |
 | --- | --- |
@@ -64,7 +76,7 @@ Run these commands from the repository root with binaries built for your machine
 
 Configuration files use custom `#include` directives. Preserve `common.yaml`, `rule.d/`, and their relative directory layout when distributing configuration files. These directives are not ordinary YAML comments.
 
-### 2. Start the Three Roles
+#### 2. Start the Three Roles
 
 Run each command on its respective machine, or in three terminals for a local test:
 
@@ -87,7 +99,7 @@ After the clients connect, open [http://127.0.0.1:8080](http://127.0.0.1:8080) i
 
 Run as a regular user with the necessary permissions. Elevate privileges only for operations that require them, such as system service installation. Remote desktop access also requires relevant OS permissions, such as screen recording and accessibility.
 
-### 3. Optional: Register a System Service
+#### 3. Optional: Register a System Service
 
 Use a terminal with system service management privileges and replace the configuration path with its actual absolute path:
 
@@ -101,7 +113,7 @@ Use a terminal with system service management privileges and replace the configu
 
 The server supports the same subcommands through `chickreomte-svr`. `--user` belongs to the `install` subcommand, not foreground execution. When upgrading, stop and uninstall old services using the old binary before installing new services; retain your configuration and secrets.
 
-## Build from Source
+### 5. Build from Source
 
 Install Git, Go, and the C/C++ toolchain and platform development libraries required by the client's native desktop dependencies. `go.mod` declares Go 1.18; actual build compatibility also depends on the platform, SDK, and dependency versions.
 
@@ -122,7 +134,7 @@ go build -o bin/chickreomte-svr ./code/server
 
 The Go module is `org.mutantcat.chickreomte`; internal package paths use that prefix. The GitHub repository URL is unchanged. Remote resolution for this custom module path is not configured, so clone the repository to build it instead of running `go get org.mutantcat.chickreomte`.
 
-### Platforms and Known Limitations
+#### Platforms and Known Limitations
 
 - The project includes Linux, Windows, and macOS implementations, with different capabilities. The current VNC backend does not support Windows / Linux ARM.
 - **macOS**: a local MIT-licensed capture patch uses ScreenCaptureKit with modern SDKs, requiring macOS 14+. Intel and Apple Silicon are supported.
@@ -130,7 +142,7 @@ The Go module is `org.mutantcat.chickreomte`; internal package paths use that pr
 - **code-server**: install it on the remote host and add it to `PATH`; it is not installed automatically by this project.
 - Relative `log.dir` and `codedir` paths are resolved against the executable directory, not the configuration directory. Ensure these locations are writable or configure absolute paths.
 
-### Tests
+#### Tests
 
 After `sh build` generates the assets and the platform dependencies are available, run:
 
@@ -144,7 +156,7 @@ Components independent of the native desktop backend can be tested separately:
 go test ./code/network/... ./code/server/... ./code/hash ./code/utils
 ```
 
-## Secure Deployment
+### 6. Secure Deployment
 
 - The dashboard and Shell, VNC, and code-server endpoints **do not provide independent login authentication**. Do not expose them directly to the internet. Use loopback binding, a VPN, or an authenticated reverse proxy, and restrict direct access to the endpoints.
 - Relay TLS protects client-to-relay traffic only. It does not automatically provide HTTPS or authentication for browser-facing endpoints.
@@ -152,13 +164,42 @@ go test ./code/network/... ./code/server/... ./code/hash ./code/utils
 - Treat the shared secret as a credential granting host access. Distribute it only to trusted participants and restrict network access to the relay and local endpoints.
 - Connect only to devices you own or are explicitly authorized to manage. Remove secrets and sensitive host information from logs, screenshots, and issues before sharing them.
 
-## Preview
+### 7. Project Structure
+
+```text
+.
+├── code/               # Go client, relay and network protocols
+├── conf/               # Example settings and rules
+├── desktop/            # Tauri 2 desktop client and packaging scripts
+├── html/               # Web dashboard, terminal and remote desktop
+├── third_party/        # Locally maintained native desktop dependencies
+├── docs/               # Deployment, rules, architecture and releases
+├── .github/workflows/  # Native packages, Releases and CodeQL
+├── logo.png            # Project logo
+├── README.md           # Chinese documentation
+├── README.en.md        # English documentation
+├── CHANGELOG.md        # Version history
+└── LICENSE             # MIT License
+```
+
+### 8. Development Status
+
+- [x] Web terminals, remote desktops and code-server forwarding
+- [x] Self-hosted relay and optional TLS transport
+- [x] Bilingual Tauri 2 desktop client with a bundled Go engine
+- [x] Windows NSIS, dual-architecture macOS DMGs and Linux AppImage
+- [x] Version-tag-triggered CI packaging and Release publication
+- [x] Package launch checks, macOS ad-hoc signing and SHA-256 verification
+
+See the [desktop and release guide](docs/desktop.md) for platform and permission limitations, and the [changelog](CHANGELOG.md) for version history.
+
+### 9. Preview
 
 Desktop client interface preview:
 
 ![ChickReomte desktop client](docs/imgs/desktop.png)
 
-## Documentation and Contributing
+### 10. Documentation and Contributing
 
 The detailed guides and changelog are currently in Chinese:
 
@@ -172,7 +213,7 @@ The detailed guides and changelog are currently in Chinese:
 
 Bug reports, fixes, and documentation improvements are welcome. Include your OS, architecture, Go / SDK versions, reproduction steps, and sanitized logs in reports. Add relevant tests for code changes and keep both README editions in sync.
 
-## License
+### 11. License
 
 This project is licensed under the [MIT License](LICENSE), which permits commercial use, modification, distribution, and sublicensing, provided the copyright and permission notices are retained. The software is provided as is, without warranty. See `LICENSE` for the full terms.
 

@@ -1,23 +1,18 @@
-# 小鸡远程（ChickReomte）
+<div align="center">
+<img src="./logo.png" width="100" alt="小鸡远程 Logo" />
+<h2>小鸡远程</h2>
+</div>
 
 **简体中文** | [English](README.en.md)
 
 [![Build](https://github.com/Mutantcat-Working-Group/ChickRemote/actions/workflows/desktop.yml/badge.svg)](https://github.com/Mutantcat-Working-Group/ChickRemote/actions/workflows/desktop.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-小鸡远程是一款可私有化部署的远程主机管理工具。通过 Go 中继服务和客户端，在浏览器中访问远程终端、桌面与 code-server 开发环境。
+### 一、功能简述
+
+小鸡远程（ChickReomte）是一款**可私有化部署的远程主机管理工具**。通过 Go 中继服务和客户端，在浏览器中访问远程终端、桌面与 code-server 开发环境。
 
 当前版本 **1.0.20260919** 提供 Tauri 2 桌面客户端、命令行客户端和 Web 管理界面。桌面安装包内置 Go 客户端，无需另行安装 Go、Rust 或 Node.js。
-
-## 桌面安装
-
-从 [Releases](https://github.com/Mutantcat-Working-Group/ChickRemote/releases) 下载：Windows x64 使用 NSIS `.exe`，macOS 14+ 分别提供 Intel / Apple Silicon `.dmg`，Linux x64 提供 `.AppImage`。Windows 安装器内置 WebView2 离线安装程序；macOS 应用及 DMG 使用 ad-hoc 签名，不是 Apple 公证，首次启动可能需在系统设置中允许。Windows 也可能出现 SmartScreen 提示。Linux 需可执行权限和 FUSE 2，远程桌面使用 X11 会话。
-
-启动桌面应用，填写本机 ID、中继地址、共享密钥和可选的目标 ID，然后启动客户端并打开会话面板。受控端可将目标 ID 留空。需要先部署中继；桌面端不内置公共中继。默认启用 TLS，必须与中继配置匹配。macOS 受控端需要屏幕录制和辅助功能权限。
-
-配置和日志保存在用户应用数据目录，界面支持中英文切换。桌面配置仅创建 VNC 规则，终端和 code-server 的高级规则仍通过 CLI 配置使用。详见[桌面与发布指南](docs/desktop.md)。
-
-## 功能
 
 | 功能 | 说明 |
 | --- | --- |
@@ -29,7 +24,24 @@
 | 传输协议 | Protobuf 消息、虚拟链路复用、可选 TLS |
 | 服务运行 | 支持前台运行及注册系统服务 |
 
-## 工作方式
+### 二、平台支持与安装
+
+从 **[Releases](https://github.com/Mutantcat-Working-Group/ChickRemote/releases)** 下载对应平台的安装包：
+
+| 平台 | 架构 | 安装格式 | 运行要求 |
+| --- | --- | --- | --- |
+| Windows | x64 | NSIS `.exe` | 内置 WebView2 离线安装程序 |
+| macOS | Apple Silicon / ARM64 | `.dmg` | macOS 14+，ad-hoc 签名 |
+| macOS | Intel / x64 | `.dmg` | macOS 14+，ad-hoc 签名 |
+| Linux | x64 | `.AppImage` | 可执行权限、FUSE 2；远程桌面使用 X11 |
+
+macOS 应用及 DMG 使用 ad-hoc 签名，不是 Apple 公证，首次启动可能需在系统设置中允许。Windows 也可能出现 SmartScreen 提示。下载后可使用 Release 中的 `SHA256SUMS.txt` 校验安装包。
+
+启动桌面应用，填写本机 ID、中继地址、共享密钥和可选的目标 ID，然后启动客户端并打开会话面板。受控端可将目标 ID 留空。需要先部署中继；桌面端不内置公共中继。默认启用 TLS，必须与中继配置匹配。macOS 受控端需要屏幕录制和辅助功能权限。
+
+配置和日志保存在用户应用数据目录，界面支持中英文切换。桌面配置仅创建 VNC 规则，终端和 code-server 的高级规则仍通过 CLI 配置使用。详见[桌面与发布指南](docs/desktop.md)。
+
+### 三、工作方式
 
 ```text
 浏览器 -> 控制端 chickreomte-cli -> 中继 chickreomte-svr <- 受控端 chickreomte-cli
@@ -41,11 +53,11 @@
 
 控制端与受控端使用同一个客户端程序，通过配置区分角色。详细设计见[架构与实现](docs/desc.md)。
 
-## 快速开始
+### 四、快速上手
 
 以下命令从仓库根目录执行，适用于已有本机可运行二进制的环境；源码构建见下一节。发行包可在 [Releases](https://github.com/Mutantcat-Working-Group/ChickRemote/releases) 查看，旧包的命名和内容可能与当前源码不同。
 
-### 1. 准备配置
+#### 1. 准备配置
 
 | 文件 | 用途 |
 | --- | --- |
@@ -64,7 +76,7 @@
 
 配置使用自定义 `#include` 指令。分发配置时请保留 `common.yaml`、`rule.d/` 及相对目录关系；这些指令并非普通 YAML 注释。
 
-### 2. 启动三个角色
+#### 2. 启动三个角色
 
 在对应机器上分别运行；本机验证时可以使用三个终端：
 
@@ -87,7 +99,7 @@
 
 使用具备必要权限的普通用户运行；仅在安装系统服务等确有需要的操作中提升权限。远程桌面还需操作系统授予屏幕录制、辅助功能等权限。
 
-### 3. 可选：注册系统服务
+#### 3. 可选：注册系统服务
 
 在具备系统服务管理权限的终端中运行，并将配置路径替换为实际绝对路径：
 
@@ -101,7 +113,7 @@
 
 服务端使用 `chickreomte-svr` 的同名子命令。`--user` 是 `install` 子命令的选项，不是前台运行参数。升级时先用旧程序停止并卸载旧服务，再安装新服务，保留配置和密钥。
 
-## 从源码构建
+### 五、从源码构建
 
 需要 Git、Go，以及客户端原生桌面依赖所需的 C/C++ 工具链和平台开发库。`go.mod` 声明 Go 1.18；实际可用性还取决于平台、SDK 和依赖版本，不代表任意平台均可无条件构建。
 
@@ -122,7 +134,7 @@ go build -o bin/chickreomte-svr ./code/server
 
 Go module 为 `org.mutantcat.chickreomte`，内部包路径统一使用该前缀。GitHub 仓库地址保持不变；自定义模块路径尚未配置远程解析，请克隆后构建，不要使用 `go get org.mutantcat.chickreomte` 安装。
 
-### 平台与已知限制
+#### 平台与已知限制
 
 - 项目包含 Linux、Windows、macOS 实现，但能力不完全一致；现有 VNC 后端不支持 Windows / Linux ARM。
 - **macOS**：本地维护的 MIT 截图库补丁使用 ScreenCaptureKit，兼容新 SDK，要求 macOS 14+。支持 Intel 和 Apple Silicon。
@@ -130,7 +142,7 @@ Go module 为 `org.mutantcat.chickreomte`，内部包路径统一使用该前缀
 - **code-server**：需在受控端安装并加入 `PATH`，不会随本项目自动安装。
 - 相对 `log.dir` 和 `codedir` 基于可执行文件所在目录解析，而非配置文件目录。请保证目录可写，或配置绝对路径。
 
-### 测试
+#### 测试
 
 在 `sh build` 完成资源生成且平台依赖满足后运行：
 
@@ -144,7 +156,7 @@ go test ./...
 go test ./code/network/... ./code/server/... ./code/hash ./code/utils
 ```
 
-## 安全部署
+### 六、安全部署
 
 - 管理面板及 Shell、VNC、code-server 入口**没有独立登录认证**。不要直接暴露到公网；使用回环绑定、VPN，或带认证的反向代理，并限制直连入口。
 - 中继 TLS 仅保护客户端与中继之间的传输，不会自动为浏览器管理入口提供 HTTPS 或认证。
@@ -152,13 +164,42 @@ go test ./code/network/... ./code/server/... ./code/hash ./code/utils
 - 共享密钥应视为对主机访问的授权凭据，只向可信参与者分发；限制中继和本地入口的网络访问。
 - 仅连接自己拥有或获得明确授权的设备。避免在日志、截图或 Issue 中泄露密钥和主机信息。
 
-## 界面预览
+### 七、项目结构
+
+```text
+.
+├── code/               # Go 客户端、中继与通信协议
+├── conf/               # 示例配置与规则
+├── desktop/            # Tauri 2 桌面客户端与打包脚本
+├── html/               # Web 管理面板、终端与远程桌面
+├── third_party/        # 本地维护的原生桌面依赖
+├── docs/               # 部署、规则、架构与发布文档
+├── .github/workflows/  # 原生打包、Release 与 CodeQL
+├── logo.png            # 项目 Logo
+├── README.md           # 中文说明
+├── README.en.md        # English documentation
+├── CHANGELOG.md        # 更新记录
+└── LICENSE             # MIT 协议
+```
+
+### 八、开发进度
+
+- [x] Web 终端、远程桌面与 code-server 转发
+- [x] 私有化中继与可选 TLS 传输
+- [x] Tauri 2 中英文桌面客户端，内置 Go 引擎
+- [x] Windows NSIS、macOS 双架构 DMG、Linux AppImage
+- [x] 版本标签触发 CI 打包与 Release 发布
+- [x] 安装包启动检查、macOS ad-hoc 签名与 SHA-256 校验
+
+已知平台和权限限制见[桌面与发布指南](docs/desktop.md)，历史变更见[更新记录](CHANGELOG.md)。
+
+### 九、界面预览
 
 桌面客户端界面预览：
 
 ![小鸡远程桌面客户端](docs/imgs/desktop.png)
 
-## 文档与贡献
+### 十、文档与贡献
 
 - [部署指南](docs/startup.md)
 - [规则配置](docs/rules.md)
@@ -170,7 +211,7 @@ go test ./code/network/... ./code/server/... ./code/hash ./code/utils
 
 欢迎提交问题、修复和文档改进。报告问题时请提供操作系统、架构、Go / SDK 版本、复现步骤及脱敏日志；代码变更请附相关测试，并同步更新中英文 README。
 
-## 开源协议
+### 十一、开源协议
 
 本项目采用 [MIT License](LICENSE)，允许商业使用、修改、分发和再许可，但须保留版权声明及许可声明。软件按原样提供，不附带任何保证，完整条款以 `LICENSE` 为准。
 
