@@ -2,7 +2,7 @@
 
 ## 安装 / Installation
 
-版本 / Version: `1.0.20260919`。标识符 / Identifier: `org.mutantcat.chickreomte`。
+版本 / Version: `1.0.20260920`。标识符 / Identifier: `org.mutantcat.chickreomte`。
 
 | 平台 / Platform | 文件 / File | 要求 / Requirements |
 | --- | --- | --- |
@@ -67,14 +67,14 @@ Linux packaging requires `/usr/bin/xclip`; the AppImage bundles it for clipboard
 Update the version consistently in those files, commit, and push a matching version tag:
 
 ```sh
-git tag v1.0.20260919
+git tag v1.0.20260920
 git push origin master
-git push origin v1.0.20260919
+git push origin v1.0.20260920
 ```
 
 `Desktop packages` 在 push/PR 中验证四个平台，只有版本标签触发 Release。四个平台全部成功后统一上传安装包及 `SHA256SUMS.txt`。
 The workflow builds all four targets on push/PR; only a version tag publishes a release, after all builds succeed.
 Manual dispatch builds artifacts without publishing. Artifact retention is 14 days; release assets persist.
 
-公开版本始终是 `1.0.20260919`。Windows 的 PE/NSIS 16 位数字字段使用 `1.0.2026.919`，Tauri 内部以 `1.0.2026+919` 表达。
+当前公开版本是 `1.0.20260920`。Windows 的 PE/NSIS 16 位数字字段使用 `1.0.2026.920`，Tauri 内部以 `1.0.2026+920` 表达。
 The public version and filenames remain unchanged; Windows uses this numeric mapping to avoid overflowing its 16-bit version fields.

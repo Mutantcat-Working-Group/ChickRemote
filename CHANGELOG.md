@@ -2,6 +2,13 @@
 
 [中文 README](README.md) | [English README](README.en.md) | [当前部署指南](docs/startup.md)
 
+## 1.0.20260920
+
+- 使用项目 `logo.png` 统一 Windows、macOS、Linux 应用图标及桌面界面 Logo。
+- 新增网页预览 favicon，移除旧图标源文件。
+- 中英文 README 改为居中 Logo、编号章节、平台表格、项目结构与开发进度格式。
+- 同步客户端、服务端、前端和 Tauri 版本，发布四平台安装包及 SHA-256 清单。
+
 ## 1.0.20260919
 
 - 新增 Tauri 2 桌面客户端，内置 Go 引擎，支持中英文配置、启停和状态查看。

@@ -1,12 +1,14 @@
-## 小鸡远程 / ChickReomte 1.0.20260919
+## 小鸡远程 / ChickReomte 1.0.20260920
 
-- Tauri 2 桌面客户端，内置 Go 引擎，中英文界面及连接配置。
-- Tauri 2 desktop client with a bundled Go engine, bilingual UI and connection settings.
+- 使用项目 `logo.png` 更新三平台应用图标、桌面界面 Logo 和网页 favicon。
+- Updated native application icons, desktop branding and favicon from the project `logo.png`.
+- 重排中英文 README，统一居中 Logo、编号章节、平台支持表与项目结构。
+- Restyled bilingual READMEs with centered branding, numbered sections, platform tables and project structure.
+- 客户端、服务端、前端与 Tauri 版本统一升级至 `1.0.20260920`。
+- Client, relay, frontend and Tauri versions updated to `1.0.20260920`.
 - Windows x64 NSIS EXE with offline WebView2; macOS Intel / Apple Silicon DMGs; Linux x64 AppImage.
-- macOS 应用及 DMG 使用 ad-hoc 签名，截图后端迁移至 ScreenCaptureKit（macOS 14+）。
+- macOS 应用及 DMG 使用 ad-hoc 签名，ScreenCaptureKit 截图后端要求 macOS 14+。
 - macOS app and DMG are ad-hoc signed; ScreenCaptureKit requires macOS 14+.
-- 品牌统一为小鸡远程 / ChickReomte，包名 org.mutantcat.chickreomte，MIT 协议。
-- Remote-session stability fixes, MIT licensing and refreshed bilingual documentation.
 
 ### 安装须知 / Installation Notes
 

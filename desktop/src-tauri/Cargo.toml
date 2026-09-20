@@ -1,6 +1,6 @@
 [package]
 name = "chickreomte"
-version = "1.0.20260919"
+version = "1.0.20260920"
 description = "ChickReomte desktop client"
 authors = ["ChickReomte contributors"]
 license = "MIT"

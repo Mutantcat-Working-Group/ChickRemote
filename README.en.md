@@ -12,7 +12,7 @@
 
 ChickReomte (小鸡远程) is a **self-hosted remote host management tool**. A Go relay server and clients provide browser access to remote terminals, desktops, and code-server development environments.
 
-Version **1.0.20260919** includes a Tauri 2 desktop client, command-line client and web dashboard. Desktop installers bundle the Go client; users do not need Go, Rust or Node.js.
+Version **1.0.20260920** includes a Tauri 2 desktop client, command-line client and web dashboard. Desktop installers bundle the Go client; users do not need Go, Rust or Node.js.
 
 | Feature | Description |
 | --- | --- |

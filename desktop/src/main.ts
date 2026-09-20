@@ -10,7 +10,7 @@ const languages = {
 };
 let language: 'zh' | 'en' = localStorage.getItem('language') === 'en' ? 'en' : 'zh';
 let settings: Settings = { id: '', server: '127.0.0.1:6154', secret: '', target: '', tls: true, dashboard_port: 8080 };
-let status: Status = { running: false, ready: false, log: '', version: '1.0.20260919' };
+let status: Status = { running: false, ready: false, log: '', version: '1.0.20260920' };
 let busy = false;
 const root = document.querySelector<HTMLDivElement>('#app')!;
 const $ = <T extends HTMLElement>(selector: string) => root.querySelector<T>(selector)!;
