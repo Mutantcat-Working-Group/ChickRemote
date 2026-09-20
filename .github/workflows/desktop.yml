@@ -61,9 +61,9 @@ jobs:
         run: |
           sudo apt-get update
           if [ "${{ matrix.platform }}" = linux-aarch64 ]; then
-            sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libssl-dev librsvg2-dev libayatana-appindicator3-dev patchelf libx11-dev libxtst-dev libxrandr-dev libxinerama-dev libxcursor-dev libxfixes-dev libfuse2t64 xclip xvfb
+            sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential pkg-config libgtk-3-dev desktop-file-utils curl wget file libssl-dev librsvg2-dev libayatana-appindicator3-dev patchelf libx11-dev libxtst-dev libxrandr-dev libxinerama-dev libxcursor-dev libxfixes-dev libfuse2t64 xclip xvfb
           else
-            sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libssl-dev librsvg2-dev libayatana-appindicator3-dev patchelf libx11-dev libxtst-dev libxrandr-dev libxinerama-dev libxcursor-dev libxfixes-dev libfuse2 xclip xvfb
+            sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential pkg-config libgtk-3-dev desktop-file-utils curl wget file libssl-dev librsvg2-dev libayatana-appindicator3-dev patchelf libx11-dev libxtst-dev libxrandr-dev libxinerama-dev libxcursor-dev libxfixes-dev libfuse2 xclip xvfb
           fi
       - name: Install Windows C compiler
         id: msys2
@@ -104,7 +104,7 @@ jobs:
         env:
           APPIMAGE_EXTRACT_AND_RUN: '1'
           NO_STRIP: '1'
-        run: npm run desktop:build -- --bundles ${{ matrix.bundle }}
+        run: npm run desktop:build -- --bundles ${{ matrix.bundle }} --verbose
       - name: Verify and collect installer
         working-directory: desktop
         run: node scripts/collect.mjs
