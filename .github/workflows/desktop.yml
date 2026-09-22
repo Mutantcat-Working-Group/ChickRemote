@@ -186,6 +186,8 @@ jobs:
           done
           for file in ./*.sha256; do cat "$file"; done > SHA256SUMS.txt
           sha256sum -c SHA256SUMS.txt
+          md5sum ./*.exe ./*.dmg ./*.AppImage ./*.tar.gz > checksums-md5.txt
+          sha1sum ./*.exe ./*.dmg ./*.AppImage ./*.tar.gz > checksums-sha1.txt
       - name: Publish complete release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -195,5 +197,5 @@ jobs:
           if ! gh release view "$TAG" >/dev/null 2>&1; then
             gh release create "$TAG" --verify-tag --draft --title "ChickReomte $TAG" --notes-file docs/release-notes.md
           fi
-          gh release upload "$TAG" release/*.exe release/*.dmg release/*.AppImage release/*.tar.gz release/SHA256SUMS.txt --clobber
+          gh release upload "$TAG" release/*.exe release/*.dmg release/*.AppImage release/*.tar.gz release/SHA256SUMS.txt release/checksums-md5.txt release/checksums-sha1.txt --clobber
           gh release edit "$TAG" --draft=false --latest
