@@ -216,3 +216,9 @@ go test ./code/network/... ./code/server/... ./code/hash ./code/utils
 本项目采用 [MIT License](LICENSE)，允许商业使用、修改、分发和再许可，但须保留版权声明及许可声明。软件按原样提供，不附带任何保证，完整条款以 `LICENSE` 为准。
 
 保留原作者李文超的版权声明，后续贡献同样按 MIT 协议发布。第三方依赖和随附资源遵循各自的许可证，项目的 MIT 协议不替代其许可条款。
+
+---
+
+## 致谢
+
+本项目是 [lwch/natpass](https://github.com/lwch/natpass) 的 Fork，感谢原仓库及其作者的优秀开源工作，本仓库在其基础上继续维护与改进。
