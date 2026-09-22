@@ -225,3 +225,9 @@ go test ./code/network/... ./code/server/... ./code/hash ./code/utils
 - This project is released under the MIT License; see [LICENSE](LICENSE).
 - See the [desktop and release guide](docs/desktop.md) for platform and permission limitations, and the [changelog](CHANGELOG.md) for version history.
 - Please report issues to [issues](https://github.com/Mutantcat-Working-Group/ChickRemote/issues).
+
+---
+
+## Acknowledgments
+
+This project is a fork of [lwch/natpass](https://github.com/lwch/natpass). We thank the original repository and its authors for their excellent open-source work, and we continue to maintain and improve this project on top of it.
