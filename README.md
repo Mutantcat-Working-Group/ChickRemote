@@ -223,5 +223,11 @@ go test ./code/network/... ./code/server/... ./code/hash ./code/utils
 ### 十、开源协议
 
 - 本项目以 MIT 协议发布，许可证见 [LICENSE](LICENSE)。
-+ 问题反馈请到 [issues](https://github.com/Mutantcat-Working-Group/ChickRemote/issues)。
+- 问题反馈请到 [issues](https://github.com/Mutantcat-Working-Group/ChickRemote/issues)。
 - 平台和权限限制见[桌面与发布指南](docs/desktop.md)，历史变更见[更新记录](CHANGELOG.md)。
+
+---
+
+## 致谢
+
+本项目是 [lwch/natpass](https://github.com/lwch/natpass) 的 Fork，感谢原仓库及其作者的优秀开源工作，本仓库在其基础上继续维护与改进。
