@@ -1,3 +1,5 @@
+// ChickRemote client — 由异猫工作群（mutantcat.org）发行
+// GitHub: https://github.com/Mutantcat-Working-Group
 package main
 
 import (
@@ -73,6 +75,8 @@ var versionCmd = &cobra.Command{
 			version,
 			buildTime,
 			gitHash, gitReversion)
+		fmt.Printf("publisher: 由异猫工作群（mutantcat.org）发行 · %s\n",
+			"https://github.com/Mutantcat-Working-Group")
 		os.Exit(0)
 	},
 }
