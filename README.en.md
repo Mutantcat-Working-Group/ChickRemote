@@ -13,6 +13,7 @@
 - ChickReomte (小鸡远程) is a **self-hosted remote host management tool**. A Go relay server and clients provide browser access to remote terminals, desktops, and code-server development environments.
 - Version **1.0.20260920** includes a Tauri 2 desktop client, command-line client and web dashboard. Desktop installers bundle the Go client; users do not need Go, Rust or Node.js.
 - The same client program can act as either a controlling or a controlled device, differentiated by configuration alone; deployment is flexible and data never passes through a third-party service.
+- **Publisher** Mutantcat Working Group (mutantcat.org) · GitHub: https://github.com/Mutantcat-Working-Group
 
 Core value: the relay and clients are entirely under your control, with terminal, desktop and development environment access consolidated into one self-hosted Go program, and TLS for transport across untrusted networks.
 
@@ -225,9 +226,3 @@ go test ./code/network/... ./code/server/... ./code/hash ./code/utils
 - This project is released under the MIT License; see [LICENSE](LICENSE).
 - See the [desktop and release guide](docs/desktop.md) for platform and permission limitations, and the [changelog](CHANGELOG.md) for version history.
 - Please report issues to [issues](https://github.com/Mutantcat-Working-Group/ChickRemote/issues).
-
----
-
-## Acknowledgments
-
-This project is a fork of [lwch/natpass](https://github.com/lwch/natpass). We thank the original repository and its authors for their excellent open-source work, and we continue to maintain and improve this project on top of it.
