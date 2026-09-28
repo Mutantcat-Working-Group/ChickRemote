@@ -27,7 +27,7 @@
     "externalBin": ["binaries/chickreomte-cli"],
     "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
     "macOS": {"minimumSystemVersion": "14.0", "signingIdentity": "-", "hardenedRuntime": false, "infoPlist": "Info.plist"},
-    "windows": {"webviewInstallMode": {"type": "offlineInstaller"}, "nsis": {"installMode": "currentUser", "languages": ["English", "SimpChinese"], "displayLanguageSelector": true}},
+    "windows": {"webviewInstallMode": {"type": "offlineInstaller"}, "nsis": {"installMode": "perMachine", "languages": ["SimpChinese"], "template": "installer.nsi"}},
     "linux": {"appimage": {"bundleMediaFramework": true, "files": {"usr/bin/xclip": "/usr/bin/xclip"}}}
   }
 }

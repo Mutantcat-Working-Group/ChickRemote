@@ -1,4 +1,4 @@
-import { readdirSync, mkdirSync, copyFileSync, writeFileSync, readFileSync, mkdtempSync, rmdirSync } from 'node:fs';
+import { readdirSync, mkdirSync, copyFileSync, writeFileSync, readFileSync, mkdtempSync, rmdirSync, lstatSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { execFileSync, spawn } from 'node:child_process';
@@ -24,6 +24,9 @@ if (extension === '.dmg') {
   execFileSync('hdiutil', ['attach', output, '-mountpoint', mount, '-nobrowse', '-readonly'], { input: 'Y\n', stdio: ['pipe', 'inherit', 'inherit'] });
   try {
     execFileSync('codesign', ['--verify', '--deep', '--strict', join(mount, 'ChickReomte.app')], { stdio: 'inherit' });
+    if (!lstatSync(join(mount, 'Applications')).isSymbolicLink()) {
+      throw new Error('DMG is missing the /Applications shortcut');
+    }
     const bin = join(mount, 'ChickReomte.app/Contents/MacOS');
     execFileSync(join(bin, 'chickreomte-cli'), ['version'], { stdio: 'inherit' });
     const app = spawn(join(bin, 'chickreomte'), [], { stdio: 'inherit' });
